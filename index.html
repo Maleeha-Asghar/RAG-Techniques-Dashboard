@@ -6,104 +6,113 @@
     <title>RAG Techniques</title>
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.5}
+        :root{--bg-body:#f8fafc;--bg-card:#fff;--bg-panel:#fff;--bg-toolbar:#fff;--bg-hover:#f1f5f9;--bg-input:#fff;--bg-sidebar:#fff;--text-primary:#0f172a;--text-secondary:#1e293b;--text-muted:#64748b;--text-label:#475569;--border-color:#e2e8f0;--border-input:#cbd5e1;--shadow-sm:0 1px 3px rgba(0,0,0,0.1);--shadow-md:0 4px 12px rgba(59,130,246,0.15);--shadow-lg:-4px 0 20px rgba(0,0,0,0.1);--accent-blue:#3b82f6;--accent-light:#eff6ff;--tag-problem-bg:#dbeafe;--tag-problem-text:#1e40af;--tag-stage-bg:#dcfce7;--tag-stage-text:#166534;--tag-mech-bg:#f3e8ff;--tag-mech-text:#7c3aed;--chip-bg:#f8fafc;--chip-hover-bg:#eff6ff;--overlay-bg:rgba(0,0,0,0.3)}
+        [data-theme="dark"]{--bg-body:#0f172a;--bg-card:#1e293b;--bg-panel:#1e293b;--bg-toolbar:#1e293b;--bg-hover:#334155;--bg-input:#334155;--bg-sidebar:#1e293b;--text-primary:#f1f5f9;--text-secondary:#e2e8f0;--text-muted:#94a3b8;--text-label:#cbd5e1;--border-color:#334155;--border-input:#475569;--shadow-sm:0 1px 3px rgba(0,0,0,0.3);--shadow-md:0 4px 12px rgba(0,0,0,0.4);--shadow-lg:-4px 0 20px rgba(0,0,0,0.5);--accent-blue:#3b82f6;--accent-light:#1e3a8a;--tag-problem-bg:#1e3a8a;--tag-problem-text:#93bbfc;--tag-stage-bg:#14532d;--tag-stage-text:#86efac;--tag-mech-bg:#581c87;--tag-mech-text:#d8b4fe;--chip-bg:#1e293b;--chip-hover-bg:#334155;--overlay-bg:rgba(0,0,0,0.6)}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--bg-body);color:var(--text-secondary);line-height:1.5;transition:background 0.3s,color 0.3s}
         .container{max-width:1400px;margin:0 auto;padding:20px}
-        h1{font-size:28px;font-weight:600;color:#0f172a;margin-bottom:8px;text-align:center}
-        .subtitle{font-size:14px;color:#64748b;margin-bottom:24px}
-        .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px;background:#fff;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-        input[type=search]{flex:1;min-width:200px;height:40px;font-size:14px;padding:0 16px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#1e293b;outline:none}
-        input[type=search]:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
-        select{height:40px;padding:0 12px;font-size:14px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#1e293b;cursor:pointer;outline:none;min-width:180px}
-        select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
-        .stats{font-size:13px;color:#64748b;margin-left:auto;font-weight:500}
-        .cluster-section{margin-bottom:20px;background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-        .cluster-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none;background:#f8fafc;border-bottom:1px solid #e2e8f0;transition:background 0.2s}
-        .cluster-header:hover{background:#f1f5f9}
+        h1{font-size:28px;font-weight:600;color:var(--text-primary);margin-bottom:8px;text-align:center}
+        .subtitle{font-size:14px;color:var(--text-muted);margin-bottom:24px}
+        .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px;background:var(--bg-toolbar);border-radius:12px;border:1px solid var(--border-color);margin-bottom:24px;box-shadow:var(--shadow-sm)}
+        input[type=search]{flex:1;min-width:200px;height:40px;font-size:14px;padding:0 16px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-input);color:var(--text-secondary);outline:none}
+        input[type=search]:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-light)}
+        select{height:40px;padding:0 12px;font-size:14px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-input);color:var(--text-secondary);cursor:pointer;outline:none;min-width:180px}
+        select:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-light)}
+        .stats{font-size:13px;color:var(--text-muted);margin-left:auto;font-weight:500}
+        .cluster-section{margin-bottom:20px;background:var(--bg-card);border-radius:12px;border:1px solid var(--border-color);overflow:hidden;box-shadow:var(--shadow-sm)}
+        .cluster-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none;background:var(--bg-body);border-bottom:1px solid var(--border-color);transition:background 0.2s}
+        .cluster-header:hover{background:var(--bg-hover)}
+        input[type=search]:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-light)}
+        select{height:40px;padding:0 12px;font-size:14px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-input);color:var(--text-secondary);cursor:pointer;outline:none;min-width:180px}
+        select:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-light)}
+        .stats{font-size:13px;color:var(--text-muted);margin-left:auto;font-weight:500}
+        .cluster-section{margin-bottom:20px;background:var(--bg-card);border-radius:12px;border:1px solid var(--border-color);overflow:hidden;box-shadow:var(--shadow-sm)}
+        .cluster-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none;background:var(--bg-body);border-bottom:1px solid var(--border-color);transition:background 0.2s}
+        .cluster-header:hover{background:var(--bg-hover)}
         .cluster-header.collapsed{border-bottom:none}
         .cluster-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
-        .cluster-title{font-size:16px;font-weight:600;color:#0f172a;flex:1}
-        .cluster-count{font-size:13px;color:#64748b;background:#e2e8f0;padding:4px 12px;border-radius:20px}
-        .cluster-toggle{font-size:18px;color:#64748b;transition:transform 0.2s}
+        .cluster-title{font-size:16px;font-weight:600;color:var(--text-primary);flex:1}
+        .cluster-count{font-size:13px;color:var(--text-muted);background:var(--bg-hover);padding:4px 12px;border-radius:20px}
+        .cluster-toggle{font-size:18px;color:var(--text-muted);transition:transform 0.2s}
         .cluster-toggle.collapsed{transform:rotate(-90deg)}
-        .cluster-desc{font-size:13px;color:#64748b;padding:0 20px 16px 44px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+        .cluster-desc{font-size:13px;color:var(--text-muted);padding:0 20px 16px 44px;background:var(--bg-body);border-bottom:1px solid var(--border-color)}
         .cluster-desc.collapsed{display:none}
         .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:20px}
         .cards-grid.collapsed{display:none}
-        .card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s}
-        .card:hover{border-color:#3b82f6;box-shadow:0 4px 12px rgba(59,130,246,0.15);transform:translateY(-2px)}
-        .card-name{font-size:14px;font-weight:600;color:#0f172a;margin-bottom:8px;line-height:1.4}
+        .card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s}
+        .card:hover{border-color:var(--accent-blue);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+        .card-name{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px;line-height:1.4}
         .tag-row{display:flex;flex-wrap:wrap;gap:4px}
         .tag{font-size:11px;padding:3px 8px;border-radius:6px;line-height:1.3;font-weight:500}
         .tag-problem{background:#dbeafe;color:#1e40af}
         .tag-stage{background:#dcfce7;color:#166534}
         .tag-mech{background:#f3e8ff;color:#7c3aed}
-        .detail-panel{position:fixed;top:0;right:0;bottom:0;width:480px;background:#fff;border-left:1px solid #e2e8f0;padding:24px;overflow-y:auto;z-index:100;transform:translateX(100%);transition:transform 0.3s;box-shadow:-4px 0 20px rgba(0,0,0,0.1)}
+        .detail-panel{position:fixed;top:0;right:0;bottom:0;width:480px;background:var(--bg-panel);border-left:1px solid var(--border-color);padding:24px;overflow-y:auto;z-index:100;transform:translateX(100%);transition:transform 0.3s;box-shadow:var(--shadow-lg)}
         .detail-panel.open{transform:translateX(0)}
-        .panel-close{float:right;background:none;border:none;font-size:24px;cursor:pointer;color:#64748b;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.2s}
-        .panel-close:hover{background:#f1f5f9;color:#0f172a}
-        .panel-name{font-size:20px;font-weight:600;color:#0f172a;margin:0 40px 12px 0;line-height:1.4}
-        .panel-cluster{display:inline-flex;align-items:center;gap:8px;font-size:13px;margin-bottom:20px;padding:6px 12px;background:#f1f5f9;border-radius:20px}
+        .panel-close{float:right;background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.2s}
+        .panel-close:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .panel-name{font-size:20px;font-weight:600;color:var(--text-primary);margin:0 40px 12px 0;line-height:1.4}
+        .panel-cluster{display:inline-flex;align-items:center;gap:8px;font-size:13px;margin-bottom:20px;padding:6px 12px;background:var(--bg-hover);border-radius:20px}
         .panel-cluster-dot{width:10px;height:10px;border-radius:50%}
-        .panel-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #e2e8f0}
+        .panel-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border-color)}
         .panel-section:last-of-type{border-bottom:none}
-        .panel-label{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
-        .panel-val{font-size:14px;color:#1e293b;line-height:1.6}
-        .panel-desc{font-size:14px;color:#374151;line-height:1.8;margin-top:8px}
+        .panel-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+        .panel-val{font-size:14px;color:var(--text-secondary);line-height:1.6}
+        .panel-desc{font-size:14px;color:var(--text-secondary);line-height:1.8;margin-top:8px}
         .panel-desc ul{margin:12px 0;padding-left:20px}
         .panel-desc li{margin:8px 0}
-        .similar-chip{display:inline-block;font-size:12px;padding:6px 12px;border:1px solid #e2e8f0;border-radius:20px;margin:4px;cursor:pointer;color:#475569;background:#f8fafc;transition:all 0.2s;position:relative}
-        .similar-chip:hover{border-color:#3b82f6;color:#3b82f6;background:#eff6ff}
-        .similar-chip:hover::after{content:attr(data-tooltip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:11px;padding:6px 10px;border-radius:6px;white-space:normal;max-width:220px;line-height:1.4;z-index:1000;margin-bottom:6px}
-        .similar-chip::before{content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%) translateY(4px);border:5px solid transparent;border-top-color:#1e293b;z-index:1001;opacity:0;visibility:hidden}
+        .similar-chip{display:inline-block;font-size:12px;padding:6px 12px;border:1px solid var(--border-color);border-radius:20px;margin:4px;cursor:pointer;color:var(--text-muted);background:var(--chip-bg);transition:all 0.2s;position:relative}
+        .similar-chip:hover{border-color:var(--accent-blue);color:var(--accent-blue);background:var(--chip-hover-bg)}
+        .similar-chip:hover::after{content:attr(data-tooltip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--bg-hover);color:var(--text-secondary);font-size:11px;padding:6px 10px;border-radius:6px;white-space:normal;max-width:220px;line-height:1.4;z-index:1000;margin-bottom:6px;border:1px solid var(--border-color)}
+        .similar-chip::before{content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%) translateY(4px);border:5px solid transparent;border-top-color:var(--bg-hover);z-index:1001;opacity:0;visibility:hidden}
         .similar-chip:hover::before{opacity:1;visibility:visible}
         .rec-section{margin-bottom:16px}
         .rec-section:last-child{margin-bottom:0}
-        .rec-header{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0}
+        .rec-header{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border-color)}
         .rec-chips{display:flex;flex-wrap:wrap;gap:6px}
-        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);z-index:99;opacity:0;visibility:hidden;transition:all 0.3s}
+        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:99;opacity:0;visibility:hidden;transition:all 0.3s}
         .overlay.open{opacity:1;visibility:visible}
-        .no-results{text-align:center;padding:60px 20px;color:#64748b;font-size:16px}
+        .no-results{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:16px}
         @media(max-width:768px){.container{padding:12px}.toolbar{flex-direction:column;align-items:stretch}input[type=search],select{width:100%}.stats{margin-left:0;text-align:center}.cards-grid{grid-template-columns:1fr;padding:12px}.detail-panel{width:100%}}
         
         /* Community Engagement Styles */
-        .suggest-btn{margin-left:auto;height:40px;padding:0 16px;font-size:13px;font-weight:500;color:#3b82f6;background:#eff6ff;border:1px solid #3b82f6;border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
-        .suggest-btn:hover{background:#3b82f6;color:#fff}
-        .report-link{font-size:12px;color:#94a3b8;cursor:pointer;text-decoration:underline;margin-top:12px;display:inline-block}
-        .report-link:hover{color:#64748b}
+        .suggest-btn{margin-left:auto;height:40px;padding:0 16px;font-size:13px;font-weight:500;color:var(--accent-blue);background:var(--bg-card);border:1px solid var(--accent-blue);border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+        .suggest-btn:hover{background:var(--accent-blue);color:var(--bg-card)}
+        .report-link{font-size:12px;color:var(--text-muted);cursor:pointer;text-decoration:underline;margin-top:12px;display:inline-block}
+        .report-link:hover{color:var(--text-secondary)}
         
         /* Modal Styles */
-        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;opacity:0;visibility:hidden;transition:all 0.3s;display:flex;align-items:center;justify-content:center}
+        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:200;opacity:0;visibility:hidden;transition:all 0.3s;display:flex;align-items:center;justify-content:center}
         .modal-overlay.open{opacity:1;visibility:visible}
-        .modal-content{background:#fff;border-radius:12px;padding:24px;width:90%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 40px rgba(0,0,0,0.2)}
-        .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#64748b;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.2s}
-        .modal-close:hover{background:#f1f5f9;color:#0f172a}
-        .modal-title{font-size:20px;font-weight:600;color:#0f172a;margin-bottom:6px}
-        .modal-subtitle{font-size:13px;color:#64748b;margin-bottom:20px}
+        .modal-content{background:var(--bg-card);border-radius:12px;padding:24px;width:90%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:var(--shadow-lg)}
+        .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.2s}
+        .modal-close:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .modal-title{font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:6px}
+        .modal-subtitle{font-size:13px;color:var(--text-muted);margin-bottom:20px}
         .form-group{margin-bottom:16px}
-        .form-label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px}
-        .form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#1e293b;outline:none;transition:all 0.2s}
-        .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+        .form-label{display:block;font-size:12px;font-weight:600;color:var(--text-label);margin-bottom:6px}
+        .form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-input);color:var(--text-secondary);outline:none;transition:all 0.2s}
+        .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-light)}
         .form-textarea{min-height:100px;resize:vertical;font-family:inherit;line-height:1.6}
         .form-select{cursor:pointer}
-        .form-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid #e2e8f0}
-        .btn-submit{padding:10px 20px;font-size:14px;font-weight:500;color:#fff;background:#3b82f6;border:none;border-radius:8px;cursor:pointer;transition:all 0.2s}
-        .btn-submit:hover{background:#2563eb}
+        .form-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border-color)}
+        .btn-submit{padding:10px 20px;font-size:14px;font-weight:500;color:#fff;background:var(--accent-blue);border:none;border-radius:8px;cursor:pointer;transition:all 0.2s}
+        .btn-submit:hover{background:var(--accent-blue);filter:brightness(0.9)}
         .btn-submit:disabled{opacity:0.6;cursor:not-allowed}
-        .btn-cancel{padding:10px 20px;font-size:14px;font-weight:500;color:#64748b;background:#f1f5f9;border:none;border-radius:8px;cursor:pointer;transition:all 0.2s}
-        .btn-cancel:hover{background:#e2e8f0}
+        .btn-cancel{padding:10px 20px;font-size:14px;font-weight:500;color:var(--text-muted);background:var(--bg-hover);border:none;border-radius:8px;cursor:pointer;transition:all 0.2s}
+        .btn-cancel:hover{background:var(--border-color)}
         .form-message{font-size:13px;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:none}
-        .form-message.success{background:#dcfce7;color:#166534;border:1px solid #86efac}
-        .form-message.error{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5}
+        .form-message.success{background:var(--tag-stage-bg);color:var(--tag-stage-text);border:1px solid var(--tag-stage-text)}
+        .form-message.error{background:var(--tag-problem-bg);color:var(--tag-problem-text);border:1px solid var(--tag-problem-text)}
         .form-message.show{display:block}
-        .help-btn{height:40px;padding:0 16px;font-size:13px;font-weight:500;color:#475569;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
-        .help-btn:hover{background:#f1f5f9;border-color:#94a3b8}
+        .help-btn{height:40px;padding:0 16px;font-size:13px;font-weight:500;color:var(--text-secondary);background:var(--bg-body);border:1px solid var(--border-input);border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+        .help-btn:hover{background:var(--bg-hover);border-color:var(--text-muted)}
         .help-content{max-height:70vh;overflow-y:auto;padding-right:12px}
         .help-section{margin-bottom:24px}
         .help-section:last-child{margin-bottom:0}
         .help-title{font-size:16px;font-weight:600;color:#0f172a;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e2e8f0}
         .help-item{margin-bottom:16px}
-        .help-item-title{font-weight:600;color:#334155;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-        .help-item-desc{font-size:14px;color:#64748b;line-height:1.5}
+        .help-item-title{font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+        .help-item-desc{font-size:14px;color:var(--text-muted);line-height:1.5}
         .help-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
         .help-dot.alt{background:#ef4444}
         .help-dot.comp{background:#f59e0b}
@@ -112,9 +121,9 @@
         .fab-help:hover{transform:translateY(-4px) scale(1.05);box-shadow:0 8px 20px rgba(59,130,246,0.5),0 12px 32px rgba(59,130,246,0.3)}
         .fab-help:active{transform:translateY(-2px) scale(0.98)}
         .fab-help svg{width:24px;height:24px;stroke-width:2.5}
-        .fab-tooltip{position:absolute;bottom:70px;right:0;background:#1e293b;color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;white-space:nowrap;opacity:0;visibility:hidden;transform:translateY(10px);transition:all 0.3s;pointer-events:none}
+        .fab-tooltip{position:absolute;bottom:70px;right:0;background:var(--text-primary);color:var(--bg-card);padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;white-space:nowrap;opacity:0;visibility:hidden;transform:translateY(10px);transition:all 0.3s;pointer-events:none}
         .fab-help:hover .fab-tooltip{opacity:1;visibility:visible;transform:translateY(0)}
-        .fab-tooltip::after{content:'';position:absolute;top:100%;right:20px;border:6px solid transparent;border-top-color:#1e293b}
+        .fab-tooltip::after{content:'';position:absolute;top:100%;right:20px;border:6px solid transparent;border-top-color:var(--text-primary)}
         
         /* Pulse animation for attention */
         @keyframes fab-pulse{0%,100%{box-shadow:0 4px 12px rgba(59,130,246,0.4),0 8px 24px rgba(59,130,246,0.2),0 0 0 0 rgba(59,130,246,0.4)}50%{box-shadow:0 4px 12px rgba(59,130,246,0.4),0 8px 24px rgba(59,130,246,0.2),0 0 0 12px rgba(59,130,246,0)}}
@@ -126,12 +135,108 @@
         .help-section:last-child{margin-bottom:0}
         .help-title{font-size:16px;font-weight:600;color:#0f172a;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e2e8f0}
         .help-item{margin-bottom:16px}
+        
+        /* Sidebar Styles */
+        .sidebar{position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--bg-sidebar);border-right:1px solid var(--border-color);z-index:200;transform:translateX(-100%);transition:transform 0.3s;box-shadow:var(--shadow-lg);display:flex;flex-direction:column}
+        .sidebar.open{transform:translateX(0)}
+        .sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:20px;border-bottom:1px solid var(--border-color)}
+        .sidebar-title{font-size:18px;font-weight:600;color:var(--text-primary)}
+        .sidebar-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.2s}
+        .sidebar-close:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .sidebar-content{flex:1;overflow-y:auto;padding:20px}
+        .sidebar-section{margin-bottom:24px}
+        .sidebar-section-title{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px}
+        .sidebar-btn{width:100%;padding:12px 16px;font-size:14px;font-weight:500;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:10px;margin-bottom:8px;text-align:left}
+        .sidebar-btn:hover{background:var(--bg-hover);border-color:var(--accent-blue);color:var(--accent-blue)}
+        .sidebar-btn svg{width:18px;height:18px;flex-shrink:0}
+        .sidebar-btn.suggest-btn-sidebar{background:var(--bg-card);color:var(--text-secondary);border-color:var(--border-color)}
+        .sidebar-btn.suggest-btn-sidebar:hover{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+        .sidebar-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:199;opacity:0;visibility:hidden;transition:all 0.3s}
+        .sidebar-overlay.open{opacity:1;visibility:visible}
+        .menu-btn{height:40px;padding:0 14px;font-size:13px;font-weight:500;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;margin-right:8px}
+        .menu-btn:hover{background:var(--bg-hover);border-color:var(--text-muted);color:var(--text-secondary)}
+        .menu-btn svg{width:18px;height:18px}
+
+        /* Theme Toggle */
+        .theme-toggle{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;cursor:pointer;transition:all 0.2s;width:100%}
+        .theme-toggle:hover{background:var(--bg-hover);border-color:var(--accent-blue)}
+        .theme-toggle svg{width:20px;height:20px;flex-shrink:0;color:var(--accent-blue)}
+        .theme-toggle-text{font-size:14px;font-weight:500;color:var(--text-secondary)}
+
+        /* Sidebar TOC Styles */
+        .toc-controls{display:flex;gap:8px;margin-bottom:16px}
+        .toc-btn{flex:1;padding:8px 12px;font-size:12px;font-weight:500;color:var(--text-secondary);background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;cursor:pointer;transition:all 0.2s}
+        .toc-btn:hover{background:var(--bg-hover);border-color:var(--accent-blue);color:var(--accent-blue)}
+        
+        /* Main Section Headers (Categories, Pipeline Stages) */
+        .toc-section-group{margin-bottom:16px}
+        .toc-main-header{display:flex;align-items:center;gap:8px;padding:12px 16px;cursor:pointer;border-radius:8px;transition:all 0.2s;background:var(--bg-hover);margin-bottom:8px}
+        .toc-main-header:hover{background:var(--border-color)}
+        .toc-main-title{flex:1;font-size:14px;font-weight:600;color:var(--text-primary);text-transform:uppercase;letter-spacing:0.02em}
+        .toc-main-toggle{font-size:12px;color:var(--text-muted);transition:transform 0.2s}
+        .toc-main-toggle.expanded{transform:rotate(90deg)}
+        .toc-main-items{max-height:0;overflow:hidden;transition:max-height 0.3s ease}
+        .toc-main-items.expanded{max-height:600px;overflow-y:auto}
+        .toc-sub-items{padding-left:8px}
+        
+        /* Category and Stage Items */
+        .toc-category{margin-bottom:4px}
+        .toc-category-header{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-radius:6px;transition:all 0.2s}
+        .toc-category-header:hover{background:var(--bg-hover)}
+        .toc-category-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .toc-category-name{flex:1;font-size:13px;font-weight:500;color:var(--text-secondary)}
+        .toc-category-count{font-size:11px;color:var(--text-muted);background:var(--bg-hover);padding:2px 8px;border-radius:10px}
+        .toc-category-toggle{font-size:12px;color:var(--text-muted);transition:transform 0.2s}
+        .toc-category-toggle.expanded{transform:rotate(90deg)}
+        .toc-category-items{max-height:0;overflow:hidden;transition:max-height 0.3s ease;padding-left:28px}
+        .toc-category-items.expanded{max-height:400px;overflow-y:auto}
+        .toc-item{padding:6px 10px;font-size:12px;color:var(--text-muted);cursor:pointer;border-radius:6px;transition:all 0.2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .toc-item:hover{background:var(--bg-hover);color:var(--accent-blue)}
+        .toc-item.active{background:var(--accent-light);color:var(--accent-blue);font-weight:500}
+
+        /* Update existing styles to use CSS variables */
+        h1{color:var(--text-primary)}
+        .cluster-title{color:var(--text-primary)}
+        .cluster-count{color:var(--text-muted);background:var(--bg-hover)}
+        .cluster-toggle{color:var(--text-muted)}
+        .cluster-desc{color:var(--text-muted);background:var(--bg-body);border-bottom-color:var(--border-color)}
+        .card{background:var(--bg-card);border-color:var(--border-color)}
+        .card-name{color:var(--text-primary)}
+        .tag-problem{background:var(--tag-problem-bg);color:var(--tag-problem-text)}
+        .tag-stage{background:var(--tag-stage-bg);color:var(--tag-stage-text)}
+        .tag-mech{background:var(--tag-mech-bg);color:var(--tag-mech-text)}
+        .detail-panel{background:var(--bg-panel);border-left-color:var(--border-color)}
+        .panel-close{color:var(--text-muted)}
+        .panel-close:hover{background:var(--bg-hover);color:var(--text-primary)}
+        .panel-name{color:var(--text-primary)}
+        .panel-cluster{background:var(--bg-hover)}
+        .panel-label{color:var(--text-muted)}
+        .panel-val{color:var(--text-secondary)}
+        .panel-desc{color:var(--text-secondary)}
+        .panel-section{border-bottom-color:var(--border-color)}
+        .similar-chip{border-color:var(--border-color);color:var(--text-muted);background:var(--chip-bg)}
+        .similar-chip:hover{border-color:var(--accent-blue);color:var(--accent-blue);background:var(--chip-hover-bg)}
+        .rec-header{color:var(--text-muted);border-bottom-color:var(--border-color)}
+        .no-results{color:var(--text-muted)}
+        .modal-content{background:var(--bg-card)}
+        .modal-title{color:var(--text-primary)}
+        .modal-subtitle{color:var(--text-muted)}
+        .form-label{color:var(--text-label)}
+        .form-input,.form-select,.form-textarea{background:var(--bg-input);border-color:var(--border-input);color:var(--text-secondary)}
+        .form-actions{border-top-color:var(--border-color)}
+        .btn-cancel{background:var(--bg-hover);color:var(--text-muted)}
+        .help-title{color:var(--text-primary);border-bottom-color:var(--border-color)}
+        .help-item-title{color:var(--text-secondary)}
+        .help-item-desc{color:var(--text-muted)}
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Advanced RAG Techniques</h1>
         <div class="toolbar">
+            <button class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
             <input type="search" id="searchBox" placeholder="Search techniques...">
             <select id="clusterFilter">
                 <option value="">Categories</option>
@@ -159,17 +264,63 @@
                 <option value="cross-session">Cross-Session</option>
             </select>
             <span class="stats" id="statsLabel">194 techniques</span>
-            <button class="suggest-btn" onclick="openSuggestModal()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                Suggest Technique
-            </button>
         </div>
         <div id="root"></div>
     </div>
+
     <div class="overlay" id="overlay" onclick="closePanel()"></div>
     <div class="detail-panel" id="panel">
         <button class="panel-close" onclick="closePanel()">&times;</button>
         <div id="panelContent"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-title">Menu</span>
+            <button class="sidebar-close" onclick="toggleSidebar()">&times;</button>
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <button class="sidebar-btn" onclick="toggleTocContainer()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="9" y2="6"></line><line x1="3" y1="18" x2="15" y2="18"></line></svg>
+                    Table of Contents
+                </button>
+                <div id="sidebarToc" style="display:none;margin-top:12px;padding-left:8px"></div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Appearance</div>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+                    <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <span class="theme-toggle-text" id="themeText">Light Mode</span>
+                </button>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Help</div>
+                <button class="sidebar-btn" onclick="openHelpModal(); toggleSidebar();">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Guide
+                </button>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Contribute</div>
+                <button class="sidebar-btn suggest-btn-sidebar" onclick="openSuggestModal(); toggleSidebar();">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Suggest Technique
+                </button>
+            </div>
+        </div>
     </div>
     <script>
         const CLUSTERS = [
@@ -320,12 +471,12 @@
             {t:"RAGSmith",c:"CC",p:"retrieval noise",s:"post-retrieval",m:"observability",sim:["RAGSys","Explainable AI RAG","Reliable-RAG"]},
             {t:"RAGSys",c:"CC",p:"retrieval noise",s:"post-retrieval",m:"system optimization",sim:["RAGSmith","Explainable AI RAG","Reliable-RAG"]},
             {t:"Explainable AI RAG",c:"CC",p:"generation faithfulness",s:"generation layer",m:"explainability",sim:["Reference Citation","RAGSmith","Reliable-RAG"]},
-            {t:"Self-RAG",c:"VC",p:"generation faithfulness",s:"generation layer",m:"self-reflection",sim:["CRAG","Reflective / Self-Evaluating RAG","Iterative RAG"]},
-            {t:"CRAG",c:"VC",p:"retrieval noise",s:"post-retrieval",m:"correction",sim:["Reliable-RAG","RVR","Astute RAG"]},
-            {t:"Reflective / Self-Evaluating RAG",c:"VC",p:"generation faithfulness",s:"post-retrieval",m:"self-evaluation",sim:["Self-RAG","CRAG","Iterative RAG"]},
-            {t:"Reliable-RAG",c:"VC",p:"retrieval noise",s:"post-retrieval",m:"reliability scoring",sim:["RVR","UncertaintyRAG","CRAG"]},
-            {t:"RVR",c:"VC",p:"retrieval noise",s:"post-retrieval",m:"verification loop",sim:["Reliable-RAG","CRAG","UncertaintyRAG"]},
-            {t:"UncertaintyRAG",c:"VC",p:"retrieval noise",s:"post-retrieval",m:"uncertainty quantification",sim:["Reliable-RAG","RVR","CRAG"]}, 
+            {t:"Self-RAG",c:"VC",p:"generation faithfulness",s:"generation layer",m:"self-reflection",sim:["CRAG - Corrective RAG","Reflective / Self-Evaluating RAG","Iterative RAG"]},
+            {t:"CRAG - Corrective RAG",c:"VC",p:"retrieval noise",s:"post-retrieval",m:"correction",sim:["Reliable-RAG","RVR","Astute RAG"]},
+            {t:"Reflective / Self-Evaluating RAG",c:"VC",p:"generation faithfulness",s:"post-retrieval",m:"self-evaluation",sim:["Self-RAG","CRAG - Corrective RAG","Iterative RAG"]},
+            {t:"Reliable-RAG",c:"VC",p:"retrieval noise",s:"post-retrieval",m:"reliability scoring",sim:["RVR","UncertaintyRAG","CRAG - Corrective RAG"]},
+            {t:"RVR",c:"VC",p:"retrieval noise",s:"post-retrieval",m:"verification loop",sim:["Reliable-RAG","CRAG - Corrective RAG","UncertaintyRAG"]},
+            {t:"UncertaintyRAG",c:"VC",p:"retrieval noise",s:"post-retrieval",m:"uncertainty quantification",sim:["Reliable-RAG","RVR","CRAG - Corrective RAG"]}, 
             {t:"Refeed Retrieval Feedback RAG",c:"VC",p:"retrieval quality",s:"generation layer",m:"feedback loop",sim:["Refeed Retrieval Feedback","Iterative RAG","Self-RAG"]},
             {t:"CRAT",c:"VC",p:"generation faithfulness",s:"generation layer",m:"correction",sim:["TRACE","Reasoning-Enhanced RAG","Reflective / Self-Evaluating RAG"]},
             {t:"Reference Citation",c:"VC",p:"generation faithfulness",s:"generation layer",m:"attribution",sim:["Explainable AI RAG","Reliable-RAG","TRACE"]},
@@ -373,14 +524,14 @@
             {t:"Retrieval with Feedback Loops",c:"MS",p:"retrieval quality",s:"cross-session",m:"feedback learning",sim:["Self-Improving Agentic RAG","ReinPool","RankRAG"]},
             {t:"Eco-RAG",c:"MS",p:"query complexity",s:"pre-retrieval",m:"efficiency",sim:["CORAG","Adaptive K Size","CAG"]},
             {t:"CORAG — Cost-Constrained RAG",c:"MS",p:"query complexity",s:"pre-retrieval",m:"cost optimization",sim:["Eco-RAG","Adaptive K Size","CAG"]},
-            {t:"REFRAG",c:"RR",p:"retrieval noise",s:"post-retrieval",m:"evaluation layers",sim:['Corrective RAG (CRAG)', 'Re-Ranking Models', 'Temporal RAG']},
+            {t:"REFRAG",c:"RR",p:"retrieval noise",s:"post-retrieval",m:"evaluation layers",sim:['CRAG - Correctve RAG', 'Re-Ranking Models', 'Temporal RAG']},
             {t:"Analogy-Augmented Generation (AAG)",c:"CC",p:"generation faithfulness",s:"generation layer",m:"evaluation layers",sim:['Knowledge-Augmented Generation (KAG)', 'Reasoning-Enhanced RAG']},
             {t:"Multi-Query Retrieval",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["AMER — Multi-Query Retriever","RAG Fusion","Branched RAG"]},
             {t:"Parent-Child Chunks Retrieval / Parent Document Retrieval",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["Auto-Merging Retrieval","Sentence-Window Retrieval","Hierarchical RAG"]},
             {t:"Keywords + synonyms based Search",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["Keyword-Based Search and BM25","Query Expansion with Synonyms and Tags","Semantic and Keyword Hybrid Search"]},
             {t:"Cache Augmented Generation",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"dynamic routing",sim:['Adaptive RAG and Adaptive Query Expansion', 'ReinPool']},
             {t:"Query Expansion and Enrichment with synonyms and tags",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["Query Refinement and Rewriting","Multi-Step Query Transformation","Query Expansion with Generated Answer"]},
-            {t:"Astute RAG",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["Corrective RAG (CRAG)","Reliable-RAG","REFRAG"]},
+            {t:"Astute RAG",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["CRAG - Corrective RAG","Reliable-RAG","REFRAG"]},
             {t:"Modular RAG",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["Agentic RAG with Router Agent","Conditional RAG","Enhanced Agentic RAG"]},
             {t:"Generative AI RAG",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["Combining Retrieved Data with Original Query","Prompt Engineering","Reference Citation"]},
             {t:"Dynamic Contextual Retrieval",c:"CC",p:"context loss",s:"pre-retrieval",m:"embedding hacks",sim:["Contextual Retrieval","Contextual Retrieval Preprocessing"]},
@@ -560,7 +711,7 @@
             "REPLUG RAG": "REPLUG treats the retriever as a plug-in module, solving the problem of frozen LLMs being unable to incorporate retrieval without retraining or architectural changes.<br><br>It works by:<br>• Prepending retrieved documents to the LLM input as soft context, without modifying model weights<br>• Using ensemble scoring across multiple retrieved passages during generation<br>• Optionally fine-tuning only the retriever using LLM perplexity as a supervision signal<br>• Keeping the core LLM frozen while improving factual grounding through retrieval<br><br>Used in adapting large frozen LLMs (e.g., GPT-4) to retrieval-augmented settings without full retraining.<br><br>142. Multifaceted Retrieval improves answer quality by retrieving information from multiple perspectives instead of relying on a single retrieval strategy, solving the problem of narrow or incomplete context from one-dimensional search.<br><br>It works by:<br>• Running different retrieval methods (semantic, keyword, metadata, graph-based, etc.) in parallel<br>• Capturing multiple aspects of the same query (intent, entities, context, constraints)<br>• Merging and deduplicating results from all retrieval sources<br>• Ranking combined results for final LLM input<br>• It is used in complex QA systems, enterprise search, and RAG pipelines where queries are multi-intent or require diverse contextual coverage.",
             "CAG": "CAG solves the latency and redundancy of repeatedly retrieving the same high-frequency knowledge at runtime, by preloading stable documents into an extended KV cache for instant access.<br><br>It works by:<br>• Preloading a curated, stable knowledge base into the model's key-value cache at startup<br>• Serving cached context instantly for queries covered by the preloaded knowledge<br>• Bypassing live retrieval entirely for known-domain queries, eliminating retrieval latency<br>• Falling back to standard RAG only for queries outside the cached knowledge scope<br><br>Used in domain-specific assistants, FAQ systems, customer support bots, and any deployment with a stable, frequently queried core knowledge base.",
             "CORAG": "CORAG solves the problem of unbounded retrieval cost in RAG pipelines, where retrieving more passages improves quality but increases latency and token spend unpredictably.<br><br>It works by:<br>• Setting explicit cost budgets (token limit, latency cap, API call count) as hard constraints<br>• Dynamically selecting the retrieval strategy and passage count that maximizes quality within budget<br>• Using cost-aware scoring to trade off retrieval depth against response quality<br>• Terminating retrieval loops as soon as the budget threshold is reached<br><br>Used in cost-sensitive production deployments, real-time applications, and multi-tenant SaaS RAG systems with strict operational budgets.",
-            "CRAG": "CRAG solves the problem of RAG blindly trusting retrieved passages even when they are irrelevant or incorrect, by introducing a corrective evaluation step that validates and refines retrieval before generation.<br><br>It works by:<br>• Scoring each retrieved passage for relevance against the query using a lightweight evaluator<br>• Discarding low-confidence passages and triggering web search or alternative retrieval as correction<br>• Refining the retrieved context by stripping irrelevant content from borderline passages<br>• Generating the final answer only from validated, corrected context<br><br>Used in high-accuracy QA, fact-sensitive applications, and production RAG pipelines where generating from poor retrieval is more harmful than triggering a fallback retrieval strategy.",
+            "CRAG - Corrective RAG": "CRAG solves the problem of RAG blindly trusting retrieved passages even when they are irrelevant or incorrect, by introducing a corrective evaluation step that validates and refines retrieval before generation.<br><br>It works by:<br>• Scoring each retrieved passage for relevance against the query using a lightweight evaluator<br>• Discarding low-confidence passages and triggering web search or alternative retrieval as correction<br>• Refining the retrieved context by stripping irrelevant content from borderline passages<br>• Generating the final answer only from validated, corrected context<br><br>Used in high-accuracy QA, fact-sensitive applications, and production RAG pipelines where generating from poor retrieval is more harmful than triggering a fallback retrieval strategy.",
             "CtrlA": "CtrlA solves the problem of RAG systems retrieving indiscriminately, even when the LLM already has sufficient parametric knowledge, by giving the model inherent control over when and how much to retrieve.<br><br>It works by:<br>• Estimating the LLM's internal confidence on a query before triggering retrieval<br>• Using confidence signals as control gates to decide: skip, retrieve once, or retrieve iteratively<br>• Dynamically adjusting retrieval depth and scope based on knowledge gap severity<br>• Blending parametric and retrieved knowledge proportionally based on control signals<br><br>Used in adaptive QA, efficient RAG deployments, and systems where reducing unnecessary retrieval overhead without sacrificing accuracy is a priority.",
             "DSLR": "DSLR solves the problem of retrieved passages containing irrelevant or noisy sentences that dilute answer quality, by refining documents at the sentence level before generation.<br><br>It works by:<br>• Splitting retrieved passages into individual sentences<br>• Scoring and reranking each sentence against the query for fine-grained relevance<br>• Pruning low-relevance sentences and retaining only high-signal content<br>• Reconstructing a clean, dense context passage from top-ranked sentences for the generator<br><br>Used in precision-critical QA, long-passage retrieval, legal and medical document analysis, and any setting where passage-level noise degrades generation quality.",
             "HiRAG": "HiRAG solves the flat retrieval problem of missing both global themes and fine-grained details simultaneously, by organizing knowledge into explicit hierarchical layers that serve different query abstraction levels.<br><br>It works by:<br>• Structuring the knowledge base into hierarchy levels: global summaries, topic clusters, section summaries, and raw chunks<br>• Classifying each query by abstraction level: high-level analytical or low-level factual<br>• Routing to the appropriate hierarchy layer for primary retrieval<br>• Complementing with cross-level retrieval when queries require both overview and detail<br><br>Used in large enterprise corpora, research knowledge bases, technical documentation, and any RAG system where queries span from broad thematic questions to highly specific factual lookups within the same corpus.",
@@ -718,8 +869,8 @@
                 <div class="panel-section">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                         <div class="panel-label">Description</div>
-                        <button id="copyBtn" onclick="copyDescription(this)" style="width:32px;height:32px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='#f1f5f9';this.style.borderColor='#94a3b8'" onmouseout="if(!this.dataset.copied){this.style.background='#fff';this.style.borderColor='#cbd5e1'}">
-                            <svg id="copyIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <button id="copyBtn" onclick="copyDescription(this)" style="width:32px;height:32px;padding:6px;border:1px solid var(--border-input);border-radius:6px;background:var(--bg-input);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--bg-hover)';this.style.borderColor='var(--text-muted)'" onmouseout="if(!this.dataset.copied){this.style.background='var(--bg-input)';this.style.borderColor='var(--border-input)'}">
+                            <svg id="copyIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted)"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             <svg id="checkIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </button>
                     </div>
@@ -735,6 +886,10 @@
             `;
             document.getElementById('panel').classList.add('open');
             document.getElementById('overlay').classList.add('open');
+            
+            // Close sidebar if open so description panel is fully visible
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('open');
         }
 
         function closePanel() {
@@ -751,14 +906,14 @@
                 const copyIcon = btn.querySelector('#copyIcon');
                 const checkIcon = btn.querySelector('#checkIcon');
                 btn.dataset.copied = 'true';
-                btn.style.background = '#dcfce7';
-                btn.style.borderColor = '#166534';
+                btn.style.background = 'var(--tag-stage-bg)';
+                btn.style.borderColor = 'var(--tag-stage-text)';
                 if (copyIcon) copyIcon.style.display = 'none';
                 if (checkIcon) checkIcon.style.display = 'block';
                 setTimeout(() => {
                     btn.dataset.copied = '';
-                    btn.style.background = '#fff';
-                    btn.style.borderColor = '#cbd5e1';
+                    btn.style.background = 'var(--bg-input)';
+                    btn.style.borderColor = 'var(--border-input)';
                     if (copyIcon) copyIcon.style.display = 'block';
                     if (checkIcon) checkIcon.style.display = 'none';
                 }, 1500);
@@ -795,15 +950,300 @@
             document.getElementById('reportTechDisplay').value = techName;
             document.getElementById('reportModal').classList.add('open');
             document.getElementById('reportForm').reset();
-            document.getElementById('reportTechDisplay').value = techName;
-            document.querySelector('#reportForm [data-fs-success]').style.display = 'none';
-            document.querySelector('#reportForm [data-fs-error]').style.display = 'none';
         }
 
-        function closeReportModal() {
-            document.getElementById('reportModal').classList.remove('open');
+        // Sidebar Functions
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('open');
         }
 
+        function scrollToContent() {
+            document.getElementById('root').scrollIntoView({ behavior: 'smooth' });
+            toggleSidebar();
+        }
+
+        function showSettings() {
+            alert('Settings coming soon!');
+        }
+
+        // Table of Contents Functions
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderSidebarToc() {
+            const tocContainer = document.getElementById('sidebarToc');
+            if (!tocContainer) return;
+            
+            let html = '';
+            
+            // Categories button (same style as Table of Contents)
+            html += `<button class="sidebar-btn" onclick="toggleCategoriesSubmenu()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                Categories
+            </button>`;
+            html += `<div id="tocCategoriesSubmenu" style="display:none;margin-top:8px;padding-left:8px"></div>`;
+            
+            // Divider
+            html += `<div style="height:1px;background:var(--border-color);margin:12px 0"></div>`;
+            
+            // Pipeline Stages button (same style as Table of Contents)
+            html += `<button class="sidebar-btn" onclick="toggleStagesSubmenu()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                Pipeline Stages
+            </button>`;
+            html += `<div id="tocStagesSubmenu" style="display:none;margin-top:8px;padding-left:8px"></div>`;
+            
+            // Show All button at the bottom
+            html += `<button class="sidebar-btn" onclick="showAllCategories()" style="margin-top:16px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                Show All
+            </button>`;
+            
+            tocContainer.innerHTML = html;
+        }
+
+        function toggleCategoriesSubmenu() {
+            const submenu = document.getElementById('tocCategoriesSubmenu');
+            if (!submenu) return;
+            
+            if (submenu.style.display === 'none') {
+                // Build categories list
+                let html = '';
+                CLUSTERS.forEach(cl => {
+                    const items = DATA.filter(d => d.c === cl.id);
+                    const count = items.length;
+                    
+                    html += `
+                        <div class="toc-category" data-cluster="${cl.id}">
+                            <div class="toc-category-header" 
+                                 onclick="handleCategoryClick(event, '${cl.id}')"
+                                 ondblclick="openCategoryOnMain('${cl.id}')">
+                                <span class="toc-category-dot" style="background:${cl.color}"></span>
+                                <span class="toc-category-name">${cl.name}</span>
+                                <span class="toc-category-count">${count}</span>
+                                <span class="toc-category-toggle" id="toc-toggle-${cl.id}">▶</span>
+                            </div>
+                            <div class="toc-category-items" id="toc-items-${cl.id}">
+                                ${items.map(item => `
+                                    <div class="toc-item" onclick="openPanel('${item.t.replace(/'/g, "\\'")}'); event.stopPropagation();">${item.t}</div>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                });
+                submenu.innerHTML = html;
+                submenu.style.display = 'block';
+            } else {
+                submenu.style.display = 'none';
+            }
+            
+            // Close stages if open
+            const stagesSubmenu = document.getElementById('tocStagesSubmenu');
+            if (stagesSubmenu) stagesSubmenu.style.display = 'none';
+        }
+
+        function toggleStagesSubmenu() {
+            const submenu = document.getElementById('tocStagesSubmenu');
+            if (!submenu) return;
+            
+            if (submenu.style.display === 'none') {
+                // Build stages list
+                const stages = [
+                    {id: 'pre-retrieval', name: 'Pre-Retrieval'},
+                    {id: 'retrieval core', name: 'Retrieval Core'},
+                    {id: 'post-retrieval', name: 'Post-Retrieval'},
+                    {id: 'generation layer', name: 'Generation Layer'},
+                    {id: 'cross-session', name: 'Cross-Session'}
+                ];
+                
+                let html = '';
+                stages.forEach(stage => {
+                    const items = DATA.filter(d => d.s === stage.id);
+                    const count = items.length;
+                    
+                    html += `
+                        <div class="toc-category" data-stage="${stage.id}">
+                            <div class="toc-category-header" 
+                                 onclick="handleStageClick(event, '${stage.id}')"
+                                 ondblclick="openStageOnMain('${stage.id}')">
+                                <span class="toc-category-name">${stage.name}</span>
+                                <span class="toc-category-count">${count}</span>
+                                <span class="toc-category-toggle" id="toc-toggle-stage-${stage.id.replace(/\s+/g, '-')}">▶</span>
+                            </div>
+                            <div class="toc-category-items" id="toc-items-stage-${stage.id.replace(/\s+/g, '-')}">
+                                ${items.map(item => `
+                                    <div class="toc-item" onclick="openPanel('${item.t.replace(/'/g, "\\'")}'); event.stopPropagation();">${item.t}</div>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                });
+                submenu.innerHTML = html;
+                submenu.style.display = 'block';
+            } else {
+                submenu.style.display = 'none';
+            }
+            
+            // Close categories if open
+            const categoriesSubmenu = document.getElementById('tocCategoriesSubmenu');
+            if (categoriesSubmenu) categoriesSubmenu.style.display = 'none';
+        }
+
+        function toggleTocContainer() {
+            const tocContainer = document.getElementById('sidebarToc');
+            if (tocContainer) {
+                const isVisible = tocContainer.style.display !== 'none';
+                tocContainer.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible && tocContainer.innerHTML === '') {
+                    renderSidebarToc();
+                }
+            }
+        }
+
+        function toggleMainSection(sectionId) {
+            const items = document.getElementById(`toc-items-${sectionId}`);
+            const toggle = document.getElementById(`toc-toggle-${sectionId}`);
+            
+            if (items && toggle) {
+                items.classList.toggle('expanded');
+                toggle.classList.toggle('expanded');
+            }
+        }
+
+        function expandAllCategories() {
+            CLUSTERS.forEach(cl => {
+                const items = document.getElementById(`toc-items-${cl.id}`);
+                const toggle = document.getElementById(`toc-toggle-${cl.id}`);
+                if (items) items.classList.add('expanded');
+                if (toggle) toggle.classList.add('expanded');
+            });
+        }
+
+        function collapseAllCategories() {
+            CLUSTERS.forEach(cl => {
+                const items = document.getElementById(`toc-items-${cl.id}`);
+                const toggle = document.getElementById(`toc-toggle-${cl.id}`);
+                if (items) items.classList.remove('expanded');
+                if (toggle) toggle.classList.remove('expanded');
+            });
+        }
+
+        let lastClickTime = 0;
+        let lastClickedCategory = null;
+        
+        function handleCategoryClick(event, clusterId) {
+            const currentTime = new Date().getTime();
+            const timeDiff = currentTime - lastClickTime;
+            
+            if (lastClickedCategory === clusterId && timeDiff < 300) {
+                openCategoryOnMain(clusterId);
+                return;
+            }
+            
+            lastClickTime = currentTime;
+            lastClickedCategory = clusterId;
+            
+            const items = document.getElementById(`toc-items-${clusterId}`);
+            const toggle = document.getElementById(`toc-toggle-${clusterId}`);
+            
+            if (items && toggle) {
+                items.classList.toggle('expanded');
+                toggle.classList.toggle('expanded');
+            }
+        }
+        
+        function handleStageClick(event, stageId) {
+            const currentTime = new Date().getTime();
+            const timeDiff = currentTime - lastClickTime;
+            const normalizedStageId = stageId.replace(/\s+/g, '-');
+            
+            if (lastClickedCategory === stageId && timeDiff < 300) {
+                openStageOnMain(stageId);
+                return;
+            }
+            
+            lastClickTime = currentTime;
+            lastClickedCategory = stageId;
+            
+            const items = document.getElementById(`toc-items-stage-${normalizedStageId}`);
+            const toggle = document.getElementById(`toc-toggle-stage-${normalizedStageId}`);
+            
+            if (items && toggle) {
+                items.classList.toggle('expanded');
+                toggle.classList.toggle('expanded');
+            }
+        }
+        
+        function openCategoryOnMain(clusterId) {
+            document.getElementById('clusterFilter').value = clusterId;
+            document.getElementById('stageFilter').value = '';
+            render();
+            
+            expandedClusters.add(clusterId);
+            render();
+            
+            // Explicitly close sidebar instead of toggle to prevent double-toggle issue
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('open');
+            
+            setTimeout(() => {
+                const clusterEl = document.querySelector(`[data-cluster-id="${clusterId}"]`);
+                if (clusterEl) {
+                    clusterEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        }
+        
+        function openStageOnMain(stageId) {
+            document.getElementById('clusterFilter').value = '';
+            document.getElementById('stageFilter').value = stageId;
+            render();
+            
+            // Explicitly close sidebar instead of toggle to prevent double-toggle issue
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('open');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function showAllCategories() {
+            document.getElementById('clusterFilter').value = '';
+            document.getElementById('stageFilter').value = '';
+            document.getElementById('searchBox').value = '';
+            
+            CLUSTERS.forEach(cl => expandedClusters.add(cl.id));
+            
+            render();
+            
+            // Explicitly close sidebar
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('open');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function navigateToTechnique(techName, clusterId) {
+            // Filter to show only this cluster
+            document.getElementById('clusterFilter').value = clusterId;
+            render();
+            
+            // Expand the cluster section
+            expandedClusters.add(clusterId);
+            render();
+            
+            // Scroll to the cluster
+            const clusterEl = document.querySelector(`[data-cluster-id="${clusterId}"]`);
+            if (clusterEl) {
+                clusterEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            // Close sidebar on mobile
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        // Help Modal Functions
         function openHelpModal() {
             document.getElementById('helpModal').classList.add('open');
         }
@@ -812,6 +1252,365 @@
             document.getElementById('helpModal').classList.remove('open');
         }
 
+        // Theme Toggle Functions
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeUI(newTheme);
+        }
+
+        function updateThemeUI(theme) {
+            const themeText = document.getElementById('themeText');
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (theme === 'dark') {
+                themeText.textContent = 'Dark Mode';
+                // Moon icon
+                themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+            } else {
+                themeText.textContent = 'Light Mode';
+                // Sun icon
+                themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+            }
+        }
+
+        // Initialize theme on page load
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeUI(savedTheme);
+        }
+
+        // ==========================================
+        // MODERN TABLE OF CONTENTS FUNCTIONS
+        // ==========================================
+
+        let tocObserver = null;
+        let expandedTocSections = new Set();
+
+        // Initialize ToC
+        function initToc() {
+            renderToc();
+            setupTocFilters();
+            setupTocKeyboardNav();
+            setupScrollSpy();
+            setupTocResponsive();
+        }
+
+        // Render ToC content dynamically
+        function renderToc() {
+            const tocContent = document.getElementById('tocContent');
+            if (!tocContent) return;
+
+            const clusterFilter = document.getElementById('tocClusterFilter')?.value || '';
+            const stageFilter = document.getElementById('tocStageFilter')?.value || '';
+
+            // Filter data
+            let filtered = DATA;
+            if (clusterFilter) filtered = filtered.filter(d => d.c === clusterFilter);
+            if (stageFilter) filtered = filtered.filter(d => d.s === stageFilter);
+
+            // Group by pipeline stage
+            const stages = ['pre-retrieval', 'retrieval core', 'post-retrieval', 'generation layer', 'cross-session'];
+            const stageLabels = {
+                'pre-retrieval': 'Pre-Retrieval',
+                'retrieval core': 'Retrieval Core',
+                'post-retrieval': 'Post-Retrieval',
+                'generation layer': 'Generation',
+                'cross-session': 'Cross-Session'
+            };
+            const stageIcons = {
+                'pre-retrieval': '🔍',
+                'retrieval core': '⚡',
+                'post-retrieval': '✨',
+                'generation layer': '📝',
+                'cross-session': '🔄'
+            };
+
+            let html = '';
+
+            stages.forEach(stage => {
+                const stageItems = filtered.filter(d => d.s === stage);
+                if (stageItems.length === 0) return;
+
+                const isExpanded = expandedTocSections.has(stage);
+                const hasClusterFilter = clusterFilter !== '';
+
+                html += `
+                <div class="toc-stage-group">
+                    <div class="toc-stage-header ${isExpanded ? 'expanded' : ''}" onclick="toggleTocStage('${stage}')" role="button" tabindex="0" aria-expanded="${isExpanded}">
+                        <span class="toc-stage-icon">${stageIcons[stage]}</span>
+                        <span class="toc-stage-title">${stageLabels[stage]}</span>
+                        <span class="toc-stage-count">${stageItems.length}</span>
+                        <span class="toc-section-toggle ${isExpanded ? 'expanded' : ''}">▶</span>
+                    </div>
+                    <div class="toc-items ${isExpanded ? 'expanded' : ''}" id="toc-stage-${stage}">
+                        ${groupByCluster(stageItems, hasClusterFilter)}
+                    </div>
+                </div>`;
+            });
+
+            if (html === '') {
+                html = '<div class="no-results" style="padding:20px;text-align:center;color:var(--text-muted)">No techniques match filters</div>';
+            }
+
+            tocContent.innerHTML = html;
+
+            // Re-initialize scroll spy after render
+            setTimeout(setupScrollSpy, 100);
+        }
+
+        // Group items by cluster within a stage
+        function groupByCluster(items, skipSingleGroup) {
+            const byCluster = {};
+            items.forEach(item => {
+                if (!byCluster[item.c]) byCluster[item.c] = [];
+                byCluster[item.c].push(item);
+            });
+
+            let html = '';
+            Object.keys(byCluster).forEach(clusterId => {
+                const cluster = getCluster(clusterId);
+                const clusterItems = byCluster[clusterId];
+
+                html += `
+                <div class="toc-section">
+                    <div class="toc-section-header" data-cluster-id="${clusterId}" onclick="scrollToCluster('${clusterId}')" role="link" tabindex="0">
+                        <span class="toc-section-icon" style="background:${cluster.color}"></span>
+                        <span class="toc-section-title">${cluster.name}</span>
+                        <span class="toc-section-count">${clusterItems.length}</span>
+                    </div>
+                    <div class="toc-items expanded">
+                        ${clusterItems.map(item => `
+                            <a class="toc-item" data-tech="${escapeHtml(item.t)}" onclick="openPanel('${item.t.replace(/'/g, "\\'")}')" role="link" tabindex="0">
+                                ${escapeHtml(item.t)}
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>`;
+            });
+            return html;
+        }
+
+        // Toggle stage expansion
+        function toggleTocStage(stage) {
+            const items = document.getElementById(`toc-stage-${stage}`);
+            const header = items.previousElementSibling;
+            const toggle = header.querySelector('.toc-section-toggle');
+
+            if (expandedTocSections.has(stage)) {
+                expandedTocSections.delete(stage);
+                items.classList.remove('expanded');
+                header.classList.remove('expanded');
+                toggle.classList.remove('expanded');
+                header.setAttribute('aria-expanded', 'false');
+            } else {
+                expandedTocSections.add(stage);
+                items.classList.add('expanded');
+                header.classList.add('expanded');
+                toggle.classList.add('expanded');
+                header.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // Setup ToC filters
+        function setupTocFilters() {
+            const clusterFilter = document.getElementById('tocClusterFilter');
+            const stageFilter = document.getElementById('tocStageFilter');
+
+            if (clusterFilter) {
+                clusterFilter.addEventListener('change', () => {
+                    renderToc();
+                    // Sync with main filter
+                    document.getElementById('clusterFilter').value = clusterFilter.value;
+                    render();
+                });
+            }
+
+            if (stageFilter) {
+                stageFilter.addEventListener('change', () => {
+                    renderToc();
+                    // Sync with main filter
+                    document.getElementById('stageFilter').value = stageFilter.value;
+                    render();
+                });
+            }
+
+            // Sync from main filters to ToC
+            document.getElementById('clusterFilter').addEventListener('change', (e) => {
+                if (clusterFilter) clusterFilter.value = e.target.value;
+                renderToc();
+            });
+
+            document.getElementById('stageFilter').addEventListener('change', (e) => {
+                if (stageFilter) stageFilter.value = e.target.value;
+                renderToc();
+            });
+        }
+
+        // Scroll spy with Intersection Observer
+        function setupScrollSpy() {
+            // Clean up old observer
+            if (tocObserver) tocObserver.disconnect();
+
+            const clusterSections = document.querySelectorAll('.cluster-section[data-cluster-id]');
+            if (clusterSections.length === 0) return;
+
+            const options = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px',
+                threshold: 0
+            };
+
+            tocObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const clusterId = entry.target.getAttribute('data-cluster-id');
+                        highlightTocSection(clusterId);
+                    }
+                });
+            }, options);
+
+            clusterSections.forEach(section => tocObserver.observe(section));
+        }
+
+        // Highlight active ToC section
+        function highlightTocSection(clusterId) {
+            // Remove active from all
+            document.querySelectorAll('.toc-section-header').forEach(header => {
+                header.classList.remove('active');
+            });
+
+            // Add active to current
+            const activeHeader = document.querySelector(`.toc-section-header[data-cluster-id="${clusterId}"]`);
+            if (activeHeader) {
+                activeHeader.classList.add('active');
+                // Ensure parent stage is expanded
+                const parentStage = activeHeader.closest('.toc-items');
+                if (parentStage && !parentStage.classList.contains('expanded')) {
+                    const stageId = parentStage.id.replace('toc-stage-', '');
+                    toggleTocStage(stageId);
+                }
+                // Scroll into view if needed
+                activeHeader.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        // Smooth scroll to cluster
+        function scrollToCluster(clusterId) {
+            const clusterEl = document.querySelector(`.cluster-section[data-cluster-id="${clusterId}"]`);
+            if (clusterEl) {
+                // Close mobile ToC
+                if (window.innerWidth < 1400) {
+                    closeTocSidebar();
+                }
+
+                // Expand if collapsed
+                if (!expandedClusters.has(clusterId)) {
+                    expandedClusters.add(clusterId);
+                    render();
+                }
+
+                // Smooth scroll
+                clusterEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Toggle ToC sidebar (mobile)
+        function toggleTocSidebar() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            const isOpen = sidebar.classList.contains('open');
+
+            if (isOpen) {
+                closeTocSidebar();
+            } else {
+                sidebar.classList.add('open');
+                if (overlay) overlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeTocSidebar() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        // Setup responsive behavior
+        function setupTocResponsive() {
+            const sidebar = document.getElementById('tocSidebar');
+
+            // Close on resize to desktop
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1400) {
+                    closeTocSidebar();
+                    sidebar.classList.add('sticky');
+                } else {
+                    sidebar.classList.remove('sticky');
+                }
+            });
+
+            // Initial check
+            if (window.innerWidth >= 1400) {
+                sidebar.classList.add('sticky');
+            }
+        }
+
+        // Keyboard navigation
+        function setupTocKeyboardNav() {
+            const toc = document.getElementById('tocSidebar');
+            if (!toc) return;
+
+            toc.addEventListener('keydown', (e) => {
+                const focused = document.activeElement;
+
+                switch(e.key) {
+                    case 'Escape':
+                        if (window.innerWidth < 1400) closeTocSidebar();
+                        break;
+                    case 'Home':
+                        e.preventDefault();
+                        const firstItem = toc.querySelector('.toc-item, .toc-section-header');
+                        if (firstItem) firstItem.focus();
+                        break;
+                    case 'End':
+                        e.preventDefault();
+                        const items = toc.querySelectorAll('.toc-item, .toc-section-header');
+                        if (items.length) items[items.length - 1].focus();
+                        break;
+                }
+            });
+
+            // Global keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd + Shift + T to toggle ToC
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
+                    e.preventDefault();
+                    toggleTocSidebar();
+                }
+            });
+        }
+
+        // Utility: Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (tocObserver) tocObserver.disconnect();
+        });
+
+        // Event listeners
         document.getElementById('searchBox').addEventListener('input', render);
         document.getElementById('clusterFilter').addEventListener('change', render);
         document.getElementById('stageFilter').addEventListener('change', render);
@@ -822,8 +1621,14 @@
                 closeSuggestModal();
                 closeReportModal();
                 closeHelpModal();
+                closeTocSidebar();
             }
         });
+
+        // Call init on load
+        initTheme();
+        renderSidebarToc();
+        initToc();
 
         render();
     </script>
@@ -945,7 +1750,7 @@
         <div class="modal-content">
             <button class="modal-close" onclick="closeHelpModal()">&times;</button>
             <div class="modal-title">User Guide</div>
-            <div class="modal-subtitle">Understanding the RAG Techniques Dashboard</div>
+            <div class="modal-subtitle">Understanding the Dashboard</div>
             <div class="help-content">
                 <div class="help-section">
                     <div class="help-title">How to Use</div>
