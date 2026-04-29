@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -960,6 +960,14 @@
             document.getElementById('suggestModal').classList.remove('open');
         }
 
+        function closeHelpModal() {
+            document.getElementById('helpModal').classList.remove('open');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.remove('open');
+        }
+
         function openReportModal(techName) {
             document.getElementById('reportTechName').value = techName;
             document.getElementById('reportTechDisplay').value = techName;
@@ -1741,7 +1749,7 @@
                 <input type="hidden" name="techniqueName" id="reportTechName" data-fs-field>
                 <div class="form-group">
                     <label class="form-label">Technique</label>
-                    <input type="text" class="form-input" name="techniqueDisplay" id="reportTechDisplay" data-fs-field readonly style="background:#f1f5f9">
+                    <input type="text" class="form-input" name="techniqueDisplay" id="reportTechDisplay" data-fs-field readonly>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Issue Type *</label>
