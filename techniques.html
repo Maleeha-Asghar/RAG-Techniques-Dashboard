@@ -10,7 +10,8 @@
         [data-theme="dark"]{--bg-body:#0f172a;--bg-card:#1e293b;--bg-panel:#1e293b;--bg-toolbar:#1e293b;--bg-hover:#334155;--bg-input:#334155;--bg-sidebar:#1e293b;--text-primary:#f1f5f9;--text-secondary:#e2e8f0;--text-muted:#94a3b8;--text-label:#cbd5e1;--border-color:#334155;--border-input:#475569;--shadow-sm:0 1px 3px rgba(0,0,0,0.3);--shadow-md:0 4px 12px rgba(0,0,0,0.4);--shadow-lg:-4px 0 20px rgba(0,0,0,0.5);--accent-blue:#3b82f6;--accent-light:#1e3a8a;--tag-problem-bg:#1e3a8a;--tag-problem-text:#93bbfc;--tag-stage-bg:#14532d;--tag-stage-text:#86efac;--tag-mech-bg:#581c87;--tag-mech-text:#d8b4fe;--chip-bg:#1e293b;--chip-hover-bg:#334155;--overlay-bg:rgba(0,0,0,0.6)}
         body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--bg-body);color:var(--text-secondary);line-height:1.5;transition:background 0.3s,color 0.3s}
         .container{max-width:1400px;margin:0 auto;padding:20px}
-        h1{font-size:28px;font-weight:600;color:var(--text-primary);margin-bottom:8px;text-align:center}
+        h1{font-size:28px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px;text-align:center}
+        h1 .gradient{background:linear-gradient(135deg,var(--accent-blue),#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
         .subtitle{font-size:14px;color:var(--text-muted);margin-bottom:24px}
         .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px;background:var(--bg-toolbar);border-radius:12px;border:1px solid var(--border-color);margin-bottom:24px;box-shadow:var(--shadow-sm)}
         input[type=search]{flex:1;min-width:200px;height:40px;font-size:14px;padding:0 16px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-input);color:var(--text-secondary);outline:none}
@@ -195,7 +196,7 @@
         .toc-item.active{background:var(--accent-light);color:var(--accent-blue);font-weight:500}
 
         /* Update existing styles to use CSS variables */
-        h1{color:var(--text-primary)}
+        h1 .gradient{background:linear-gradient(135deg,var(--accent-blue),#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
         .cluster-title{color:var(--text-primary)}
         .cluster-count{color:var(--text-muted);background:var(--bg-hover)}
         .cluster-toggle{color:var(--text-muted)}
@@ -232,7 +233,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Advanced RAG Techniques</h1>
+        <h1><span class="gradient">Advanced RAG Techniques</span></h1>
         <div class="toolbar">
             <a href="index.html" class="menu-btn" style="text-decoration:none" aria-label="Home">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
