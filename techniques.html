@@ -969,10 +969,10 @@
         }
 
         function openReportModal(techName) {
+            document.getElementById('reportForm').reset();
             document.getElementById('reportTechName').value = techName;
             document.getElementById('reportTechDisplay').value = techName;
             document.getElementById('reportModal').classList.add('open');
-            document.getElementById('reportForm').reset();
         }
 
         // Sidebar Functions
