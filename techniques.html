@@ -44,11 +44,19 @@
         .card-name{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px;line-height:1.4}
         .tag-row{display:flex;flex-wrap:wrap;gap:4px}
         .tag{font-size:11px;padding:3px 8px;border-radius:6px;line-height:1.3;font-weight:500}
-        .tag-problem{background:#dbeafe;color:#1e40af}
-        .tag-stage{background:#dcfce7;color:#166534}
-        .tag-mech{background:#f3e8ff;color:#7c3aed}
+        .tag-problem{background:var(--tag-problem-bg);color:var(--tag-problem-text)}
+        .tag-stage{background:var(--tag-stage-bg);color:var(--tag-stage-text)}
+        .tag-mech{background:var(--tag-mech-bg);color:var(--tag-mech-text)}
         .detail-panel{position:fixed;top:0;right:0;bottom:0;width:480px;background:var(--bg-panel);border-left:1px solid var(--border-color);padding:24px;overflow-y:auto;z-index:100;transform:translateX(100%);transition:transform 0.3s;box-shadow:var(--shadow-lg)}
         .detail-panel.open{transform:translateX(0)}
+        .lightbox-backdrop{position:fixed;top:0;left:0;right:480px;bottom:0;background:rgba(0,0,0,0.75);z-index:101;opacity:0;visibility:hidden;transition:all 0.3s;display:flex;align-items:center;justify-content:center;padding:40px}
+        .lightbox-backdrop.open{opacity:1;visibility:visible}
+        .lightbox-content{position:relative;max-width:100%;max-height:100%;display:flex;flex-direction:column;align-items:center}
+        .lightbox-img{max-width:100%;max-height:calc(100vh - 120px);border-radius:12px;border:1px solid var(--border-color);box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+        .lightbox-close{position:absolute;top:-40px;right:0;background:none;border:none;font-size:28px;cursor:pointer;color:#fff;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.2s}
+        .lightbox-close:hover{background:rgba(255,255,255,0.15)}
+        .illustration-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-hover);border:1px solid var(--border-color);border-radius:20px;color:var(--accent-blue);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s}
+        .illustration-btn:hover{background:var(--accent-light);border-color:var(--accent-blue)}
         .panel-close{float:right;background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.2s}
         .panel-close:hover{background:var(--bg-hover);color:var(--text-primary)}
         .panel-name{font-size:20px;font-weight:600;color:var(--text-primary);margin:0 40px 12px 0;line-height:1.4}
@@ -277,6 +285,14 @@
     <div class="detail-panel" id="panel">
         <button class="panel-close" onclick="closePanel()">&times;</button>
         <div id="panelContent"></div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox-backdrop" id="lightboxBackdrop" onclick="closeIllustrationPanel()">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="closeIllustrationPanel()">&times;</button>
+            <img id="illustrationImage" class="lightbox-img" src="" alt="Technique Illustration">
+        </div>
     </div>
 
     <!-- Sidebar -->
@@ -868,7 +884,13 @@
             
             document.getElementById('panelContent').innerHTML = `
                 <div class="panel-name">${d.t}</div>
-                <div class="panel-cluster"><span class="panel-cluster-dot" style="background:${cl.color}"></span>${cl.name}</div>
+                <div style="margin-bottom:16px">
+                    <div class="panel-cluster"><span class="panel-cluster-dot" style="background:${cl.color}"></span>${cl.name}</div>
+                    ${TECHNIQUE_IMAGES[d.t] ? `<button class="illustration-btn" onclick="openIllustrationPanel('${d.t.replace(/'/g, "\\'")}')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        Illustration
+                    </button>` : ''}
+                </div>
                 <div class="panel-section">
                     <div class="panel-label">Problem Addressed</div>
                     <div class="panel-val">${d.p}</div>
@@ -948,6 +970,24 @@
             }
         });
 
+        // Illustration Panel Functions
+        const TECHNIQUE_IMAGES = {
+            "Multi-Modal RAG": "Multi-Modal RAG.png",
+            "REVEAL for VLM": "REVEAL for VLM.png",
+            "Image-RAG": "Image-RAG.png",
+        };
+
+        function openIllustrationPanel(techName) {
+            const imageFile = TECHNIQUE_IMAGES[techName];
+            if (!imageFile) return;
+            document.getElementById('illustrationImage').src = imageFile;
+            document.getElementById('lightboxBackdrop').classList.add('open');
+        }
+
+        function closeIllustrationPanel() {
+            document.getElementById('lightboxBackdrop').classList.remove('open');
+        }
+
         // Community Engagement Functions
         function openSuggestModal() {
             document.getElementById('suggestModal').classList.add('open');
@@ -959,26 +999,45 @@
         function closeSuggestModal() {
             document.getElementById('suggestModal').classList.remove('open');
         }
-
+        
         function closeHelpModal() {
+
             document.getElementById('helpModal').classList.remove('open');
+
         }
+
+
 
         function closeReportModal() {
+
             document.getElementById('reportModal').classList.remove('open');
+
         }
+
+
 
         function openReportModal(techName) {
+
             document.getElementById('reportForm').reset();
+
             document.getElementById('reportTechName').value = techName;
+
             document.getElementById('reportTechDisplay').value = techName;
+
             document.getElementById('reportModal').classList.add('open');
+
         }
 
+
+
         // Sidebar Functions
+
         function toggleSidebar() {
+
             document.getElementById('sidebar').classList.toggle('open');
+
             document.getElementById('sidebarOverlay').classList.toggle('open');
+
         }
 
         function scrollToContent() {
@@ -986,10 +1045,7 @@
             toggleSidebar();
         }
 
-        function showSettings() {
-            alert('Settings coming soon!');
-        }
-
+        
         // Table of Contents Functions
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1543,6 +1599,14 @@
             }
         }
 
+        // Toggle main sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
         // Toggle ToC sidebar (mobile)
         function toggleTocSidebar() {
             const sidebar = document.getElementById('tocSidebar');
@@ -1799,6 +1863,10 @@
                     <div class="help-item">
                         <div class="help-item-title">Contributing</div>
                         <div class="help-item-desc">Found a technique we're missing? Click "Suggest Technique" to submit it. Notice incorrect information? Click "Report incorrect data" on any technique panel to let us know.</div>
+                    </div>
+                    <div class="help-item">
+                        <div class="help-item-title">Viewing Illustrations</div>
+                        <div class="help-item-desc"> Techniques include visual diagrams. When viewing a technique detail panel, click the "Illustration" button to open the image.</div>
                     </div>
                 </div>
                 <div class="help-section">
