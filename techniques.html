@@ -1367,9 +1367,7 @@
             updateThemeUI(savedTheme);
         }
 
-        // ==========================================
-        // MODERN TABLE OF CONTENTS FUNCTIONS
-        // ==========================================
+     // Table of Contents
 
         let tocObserver = null;
         let expandedTocSections = new Set();
@@ -1602,18 +1600,11 @@
             }
         }
 
-        // Toggle main sidebar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('open');
-        }
-
         // Toggle ToC sidebar (mobile)
         function toggleTocSidebar() {
             const sidebar = document.getElementById('tocSidebar');
             const overlay = document.getElementById('tocOverlay');
+            if (!sidebar) return;
             const isOpen = sidebar.classList.contains('open');
 
             if (isOpen) {
@@ -1628,6 +1619,7 @@
         function closeTocSidebar() {
             const sidebar = document.getElementById('tocSidebar');
             const overlay = document.getElementById('tocOverlay');
+            if (!sidebar) return;
             sidebar.classList.remove('open');
             if (overlay) overlay.classList.remove('open');
             document.body.style.overflow = '';
@@ -1636,6 +1628,7 @@
         // Setup responsive behavior
         function setupTocResponsive() {
             const sidebar = document.getElementById('tocSidebar');
+            if (!sidebar) return;
 
             // Close on resize to desktop
             window.addEventListener('resize', () => {
