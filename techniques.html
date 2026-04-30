@@ -276,7 +276,7 @@
                 <option value="generation layer">Generation Layer</option>
                 <option value="cross-session">Cross-Session</option>
             </select>
-            <span class="stats" id="statsLabel">194 techniques</span>
+            <span class="stats" id="statsLabel">Techniques</span>
         </div>
         <div id="root"></div>
     </div>
@@ -566,7 +566,8 @@
             {t:"Modular RAG",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["Agentic RAG with Router Agent","Conditional RAG","Enhanced Agentic RAG"]},
             {t:"Generative AI RAG",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"general",sim:["Combining Retrieved Data with Original Query","Prompt Engineering","Reference Citation"]},
             {t:"Dynamic Contextual Retrieval",c:"CC",p:"context loss",s:"pre-retrieval",m:"embedding hacks",sim:["Contextual Retrieval","Contextual Retrieval Preprocessing"]},
-            {t:"RQ-RAG — Refine Query for Retrieval-Augmented Generation",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"dynamic routing",sim:["Query Refinement and Rewriting","Multi-Step Query Transformation","Adaptive RAG and Adaptive Query Expansion"]}];
+            {t:"RQ-RAG — Refine Query for Retrieval-Augmented Generation",c:"QT",p:"retrieval quality",s:"pre-retrieval",m:"dynamic routing",sim:["Query Refinement and Rewriting","Multi-Step Query Transformation","Adaptive RAG and Adaptive Query Expansion"]},
+            {t:"Agentic-R",c:"TR",p:"retrieval quality",s:"retrieval core",m:"agentic retrieval",sim:["Agentic RAG and ReAct","Agentic Search","IM-RAG — Multi-Round Retrieval via Inner Monologues"]}];
  
         const DESCRIPTIONS = {
             "AMER — Multi-Query Retriever": "AMER solves the recall limitations of single-query retrieval by generating multiple semantically diverse query variants and aggregating their retrieval results for broader, more complete coverage.<br><br>It works by:<br>• Using an LLM to automatically generate multiple reformulations of the original query<br>• Executing independent retrieval for each query variant against the same or different indexes<br>• Aggregating and deduplicating all retrieved candidates into a unified pool<br>• Reranking the merged pool by relevance before passing to the generator<br><br>Used in open-domain QA, research retrieval, and any RAG pipeline where a single query formulation misses relevant documents due to vocabulary mismatch or narrow phrasing.",
@@ -579,6 +580,7 @@
             "Agentic RAG and ReAct": "Agentic RAG with ReAct solves the passivity of standard RAG by combining reasoning and acting in an interleaved loop, where the model thinks through what it needs, retrieves it, observes the result, and reasons toward the next step.<br><br>It works by:<br>• Model generates an explicit reasoning trace identifying what information is needed<br>• Issues a retrieval or tool-use action based on the reasoning step<br>• Observes the retrieved result and updates its reasoning accordingly<br>• Iterates reason → act → observe until sufficient evidence supports a final answer<br><br>Used in complex multi-hop QA, agentic research tasks, tool-augmented assistants, and any application requiring dynamic, self-directed information gathering rather than single-pass retrieval.",
             "Agentic RAG with Router Agent": "Agentic RAG with a Router Agent solves the rigidity of fixed retrieval pipelines by introducing an intelligent routing layer that dynamically directs queries to the most appropriate retrieval strategy, tool, or data source.<br><br>It works by:<br>• A router agent classifies each incoming query by intent, complexity, and required knowledge source<br>• Routes simple factual queries to fast single-pass retrieval and complex ones to iterative agentic pipelines<br>• Directs domain-specific queries to specialized indexes, APIs, or knowledge graphs accordingly<br>• Monitors routing outcomes and adjusts routing logic based on downstream answer quality<br><br>Used in multi-source enterprise RAG, mixed-complexity QA, and agentic systems where a single retrieval path cannot serve the full diversity of incoming query types.",
             "Agentic Search": "Agentic Search solves the passivity of keyword and semantic search by giving the model autonomous search behavior: planning search strategies, issuing queries, evaluating results, and iterating until the information need is fully satisfied.<br><br>It works by:<br>• Agent formulates an initial search strategy based on query intent and knowledge gaps<br>• Issues sequential or parallel search queries across available indexes or web sources<br>• Evaluates result quality and relevance after each search round<br>• Refines queries and repeats until a confidence threshold is met or the information need is resolved<br><br>Used in deep research automation, competitive intelligence, agentic assistants, and any system where a single search query is structurally insufficient to resolve complex or evolving information needs.",
+            "Agentic-R": "Agentic-R solves the problem of retrievers in multi-step \"search-during-think\" agentic search being sub-optimal, as they are typically trained for single-turn relevance rather than their contribution to final answer correctness.<br><br>It works by:<br>• Modeling passage utility using both local query-passage relevance and global final answer correctness<br>• Implementing an iterative, bidirectional training framework where the search agent and the retriever optimize each other<br>• Training the retriever using contrastive learning with agent-generated queries instead of fixed user questions<br>• Generating more useful evidence per retrieval step, allowing agents to solve complex questions with fewer search turns<br><br>Used in improving multi-step reasoning agents, knowledge-grounded question answering, and optimizing retriever-agent pipelines in search-augmented generation tasks.",
             "Attention U-Net RAG": "Attention U-Net RAG solves the problem of losing fine-grained retrieval signals during context compression, by borrowing the encoder-decoder skip-connection architecture of U-Net to preserve multi-scale retrieval features throughout generation.<br><br>It works by:<br>• Encoding retrieved passages through a hierarchical encoder capturing multi-scale features<br>• Passing compressed representations through a bottleneck while preserving skip connections<br>• Decoding with skip connections that reintroduce fine-grained passage features at each generation layer<br>• Ensuring both high-level semantic and low-level lexical signals survive into the final output<br><br>Used in document-grounded generation, medical image report generation, and precision RAG tasks where multi-scale retrieval fidelity directly impacts output quality.",
             "Attention-Based RAG": "Attention-Based RAG solves the problem of treating all retrieved passages equally, by using attention scores to dynamically weight which passages matter most during generation.<br><br>It works by:<br>• Retrieving a candidate set of passages as usual<br>• Computing cross-attention scores between the query/generation state and each passage<br>• Dynamically up-weighting high-attention passages and suppressing low-attention ones<br>• Allowing the model to implicitly rerank context during the generation process itself<br><br>Used in long-context generation, multi-document QA, and precision-critical applications where passage weighting directly impacts output quality.",
             "Augmented Query and Passage for RAG": "This approach solves the semantic gap between how users phrase queries and how relevant content is indexed, by augmenting both the query and the passage representations before matching.<br><br>It works by:<br>• Expanding queries with hypothetical answers, synonyms, or LLM-generated context<br>• Augmenting indexed passages with auto-generated summaries or metadata at index time<br>• Matching enriched query representations against enriched passage representations<br>• Improving retrieval recall without changing the underlying retrieval architecture<br><br>Used in domain-specific search, enterprise knowledge bases, and RAG pipelines where vocabulary mismatch and sparse queries cause retrieval failures.",
@@ -785,7 +787,7 @@
                 return matchQ && matchC && matchS;
             });
 
-            document.getElementById('statsLabel').textContent = filtered.length + ' of 194 techniques';
+            document.getElementById('statsLabel').textContent = filtered.length + ' of ' + DATA.length + ' techniques';
 
             const byCluster = {};
             CLUSTERS.forEach(c => { byCluster[c.id] = []; });
@@ -853,6 +855,7 @@
         }
 
         function openPanel(name) {
+            closeIllustrationPanel();
             const d = DATA.find(x => x.t === name);
             if (!d) return;
             selected = name;
@@ -1861,13 +1864,14 @@
                         <div class="help-item-desc">When viewing a technique, scroll down to see related techniques grouped by relationship type. Click on any related technique to explore it. Use these relationships to design complete RAG pipelines.</div>
                     </div>
                     <div class="help-item">
-                        <div class="help-item-title">Contributing</div>
-                        <div class="help-item-desc">Found a technique we're missing? Click "Suggest Technique" to submit it. Notice incorrect information? Click "Report incorrect data" on any technique panel to let us know.</div>
-                    </div>
-                    <div class="help-item">
                         <div class="help-item-title">Viewing Illustrations</div>
                         <div class="help-item-desc"> Techniques include visual diagrams. When viewing a technique detail panel, click the "Illustration" button to open the image.</div>
                     </div>
+                    <div class="help-item">
+                        <div class="help-item-title">Contributing</div>
+                        <div class="help-item-desc">Found a technique we're missing? Click "Suggest Technique" to submit it. Notice incorrect information? Click "Report incorrect data" on any technique panel to let us know.</div>
+                    </div>
+                    
                 </div>
                 <div class="help-section">
                     <div class="help-title">Categories</div>
