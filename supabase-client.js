@@ -71,20 +71,14 @@ export async function getTechniques() {
     
     if (err2) throw err2;
     
-    // Build a map of technique_id -> relationships (BIDIRECTIONAL)
+    // Build a map of technique_id -> relationships
     const relMap = {};
     relationships.forEach(r => {
-        // Forward direction: technique_id -> related_technique_id
+        // Forward direction only: technique_id -> related_technique_id
         if (!relMap[r.technique_id]) relMap[r.technique_id] = [];
         relMap[r.technique_id].push({
             relationship_type: r.relationship_type,
             related_technique: r.target
-        });
-        // Reverse direction: related_technique_id -> technique_id
-        if (!relMap[r.related_technique_id]) relMap[r.related_technique_id] = [];
-        relMap[r.related_technique_id].push({
-            relationship_type: r.relationship_type,
-            related_technique: r.source
         });
     });
     

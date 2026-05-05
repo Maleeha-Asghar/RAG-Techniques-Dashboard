@@ -55,7 +55,6 @@ window.showAdminGuide = () => {
                         <li>Choose relationship type (Alternative, Complementary, or Pipeline Chain)</li>
                         <li>Click <strong>"+ Queue"</strong> to add to queue</li>
                         <li>Click <strong>"Add Relationship"</strong> to save</li>
-                        <li>Relationships are bidirectional</li>
                     </ul>
                 </li>
                 <li><strong>Add Illustrations</strong> (optional):
@@ -211,21 +210,18 @@ window.filterTech = () => {
 
 window.openTechModal = (id) => {
     const t = id ? D.techniques.find(x=>x.id===id) : {};
-    // BIDIRECTIONAL: show relationships where this technique is source OR target
-    const techRels = id ? D.relationships.filter(r => r.technique_id === id || r.related_technique_id === id) : [];
+    // Show relationships where this technique is the source
+    const techRels = id ? D.relationships.filter(r => r.technique_id === id) : [];
     const isEdit = !!id;
     const otherTechs = isEdit ? D.techniques.filter(x => x.id !== id) : D.techniques;
     
-    // Existing relationships (for edit mode) - BIDIRECTIONAL display
+    // Existing relationships (for edit mode)
     const existingRelsHtml = techRels.length ? techRels.map(r => {
-        // If current technique is the target, show the source as the related technique
-        const isCurrentTarget = r.related_technique_id === id;
-        const relatedName = isCurrentTarget ? (r.technique?.name || 'Unknown') : (r.related?.name || 'Unknown');
-        const currentName = isCurrentTarget ? (r.related?.name || 'Unknown') : (r.technique?.name || 'Unknown');
+        const relatedName = r.related?.name || 'Unknown';
         return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
             <span class="badge badge-${r.relationship_type === 'alternative' ? 'warning' : r.relationship_type === 'complementary' ? 'success' : 'default'}">${r.relationship_type}</span>
             <span style="flex:1">${relatedName}</span>
-            <button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}', '${(currentName).replace(/'/g,"\\'")} ↔ ${(relatedName).replace(/'/g,"\\'")}')">×</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}', '${(t.name).replace(/'/g,"\\'")} → ${(relatedName).replace(/'/g,"\\'")}')">×</button>
         </div>`;
     }).join('') : '<p style="color:var(--text-muted);font-size:13px">No relationships yet</p>';
     
@@ -270,24 +266,22 @@ window.deleteRel = async (relId, name) => {
     if (!confirm(`Delete relationship "${name}"?`)) return;
     const { error } = await supabase.from('technique_relationships').delete().eq('id', relId);
     if (error) toast(error.message, 'error');
-    else { toast('Relationship deleted! (bidirectional)', 'success'); await loadAll(); openTechModal(document.getElementById('fId').value); }
-};
-
-window.deleteRelBidirectional = async (techId, relatedId, name) => {
-    if (!confirm(`Delete relationship "${name}"?`)) return;
-    // Delete both directions if they exist
-    const { error } = await supabase.from('technique_relationships')
-        .delete()
-        .or(`and(technique_id.eq.${techId},related_technique_id.eq.${relatedId}),and(technique_id.eq.${relatedId},related_technique_id.eq.${techId})`);
-    if (error) toast(error.message, 'error');
     else { toast('Relationship deleted!', 'success'); await loadAll(); openTechModal(document.getElementById('fId').value); }
 };
+
 
 window.addRel = async (techId) => {
     const relatedId = document.getElementById('fRelTech').value;
     const relType = document.getElementById('fRelType').value;
     if (!relatedId) { toast('Select a related technique', 'error'); return; }
     if (relatedId === techId) { toast('Cannot relate technique to itself', 'error'); return; }
+    
+    // Check for duplicate relationship
+    const exists = D.relationships.some(r => 
+        r.technique_id === techId && r.related_technique_id === relatedId && r.relationship_type === relType
+    );
+    if (exists) { toast('This relationship already exists', 'error'); return; }
+    
     const { error } = await supabase.from('technique_relationships').insert({ technique_id: techId, related_technique_id: relatedId, relationship_type: relType });
     if (error) toast(error.message, 'error');
     else { toast('Relationship added!', 'success'); await loadAll(); openTechModal(techId); }
@@ -301,8 +295,8 @@ window.addPendingRel = () => {
     const tech = D.techniques.find(t => t.id === relatedId);
     if (!tech) return;
     
-    // Check for duplicates
-    if (window.pendingRels.some(r => r.related_technique_id === relatedId)) {
+    // Check for duplicates (same technique AND same relationship type)
+    if (window.pendingRels.some(r => r.related_technique_id === relatedId && r.relationship_type === relType)) {
         toast('This relationship already queued', 'error'); return;
     }
     
