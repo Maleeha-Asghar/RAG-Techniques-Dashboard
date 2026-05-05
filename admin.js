@@ -24,6 +24,93 @@ window.handleLogout = async () => {
     document.getElementById('loginScreen').style.display = 'flex';
 };
 
+window.showAdminGuide = () => {
+    const guideContent = `
+        <div class="modal-header">
+            <h2>📖 Admin Dashboard Guide</h2>
+            <button class="close-btn" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body guide-content">
+            <h3>🔐 Authentication</h3>
+            <p>Log in with your Supabase credentials. The user must have appropriate RLS policies applied.</p>
+            
+            <h3>➕ Adding Techniques</h3>
+            <ol>
+                <li>Navigate to <strong>Techniques</strong> section</li>
+                <li>Click <strong>"Add New Technique"</strong></li>
+                <li>Fill in technique details:
+                    <ul>
+                        <li><strong>Name</strong>: Full technique name</li>
+                        <li><strong>Description</strong>: Detailed explanation</li>
+                        <li><strong>Cluster</strong>: Select or add new cluster</li>
+                        <li><strong>Problem</strong>: Problem category</li>
+                        <li><strong>Pipeline Stage</strong>: Where it fits in RAG pipeline</li>
+                        <li><strong>Core Mechanism</strong>: Main approach used</li>
+                    </ul>
+                </li>
+                <li><strong>Manage Relationships</strong>:
+                    <ul>
+                        <li>Start typing in relationship search box</li>
+                        <li>Select existing techniques from dropdown</li>
+                        <li>Choose relationship type (Alternative, Complementary, or Pipeline Chain)</li>
+                        <li>Click <strong>"+ Queue"</strong> to add to queue</li>
+                        <li>Click <strong>"Add Relationship"</strong> to save</li>
+                        <li>Relationships are bidirectional</li>
+                    </ul>
+                </li>
+                <li><strong>Add Illustrations</strong> (optional):
+                    <ul>
+                        <li>Upload image files to <code>illustrations/</code> directory</li>
+                        <li>Images should explain the technique visually</li>
+                    </ul>
+                </li>
+                <li>Click <strong>"Save Technique"</strong></li>
+            </ol>
+            
+            <h3>📊 Managing Other Data</h3>
+            <p>The admin dashboard allows you to manage:</p>
+            <ul>
+                <li><strong>Clusters</strong>: Group techniques by category</li>
+                <li><strong>Stages</strong>: Define pipeline stages (pre-retrieval, retrieval, post-retrieval, generation)</li>
+                <li><strong>Problems</strong>: Categorize issues techniques solve</li>
+                <li><strong>Mechanisms</strong>: Define core approaches</li>
+                <li><strong>Relationships</strong>: View and manage technique relationships</li>
+                <li><strong>Illustrations</strong>: Manage technique images</li>
+            </ul>
+            
+            <h3>🔧 Troubleshooting</h3>
+            <div class="troubleshooting">
+                <p><strong>Can't log in?</strong></p>
+                <ul>
+                    <li>Ensure user exists in Supabase Auth</li>
+                    <li>Check email is confirmed</li>
+                    <li>Verify password or use password reset</li>
+                </ul>
+                
+                <p><strong>Changes not saving?</strong></p>
+                <ul>
+                    <li>Check browser console for errors</li>
+                    <li>Verify RLS policies are applied</li>
+                    <li>Ensure correct permissions</li>
+                </ul>
+                
+                <p><strong>Images not displaying?</strong></p>
+                <ul>
+                    <li>Verify images are in <code>illustrations/</code> directory</li>
+                    <li>Check database paths match file names</li>
+                    <li>Ensure images are committed to repository</li>
+                </ul>
+            </div>
+            
+            <h3>🌐 Access URL</h3>
+            <p><code>https://maleeha-asghar.github.io/RAG-Techniques-Dashboard/admin.html</code></p>
+        </div>
+    `;
+    
+    document.getElementById('modalContent').innerHTML = guideContent;
+    document.getElementById('modalOverlay').style.display = 'flex';
+};
+
 async function checkAuth() {
     const { data:{session} } = await supabase.auth.getSession();
     if (session) {
