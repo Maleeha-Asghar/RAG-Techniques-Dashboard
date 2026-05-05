@@ -74,7 +74,6 @@ export async function getTechniques() {
     // Build a map of technique_id -> relationships
     const relMap = {};
     relationships.forEach(r => {
-        // Forward direction only: technique_id -> related_technique_id
         if (!relMap[r.technique_id]) relMap[r.technique_id] = [];
         relMap[r.technique_id].push({
             relationship_type: r.relationship_type,

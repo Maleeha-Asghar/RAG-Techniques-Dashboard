@@ -24,92 +24,6 @@ window.handleLogout = async () => {
     document.getElementById('loginScreen').style.display = 'flex';
 };
 
-window.showAdminGuide = () => {
-    const guideContent = `
-        <div class="modal-header">
-            <h2>📖 Admin Dashboard Guide</h2>
-            <button class="close-btn" onclick="closeModal()">×</button>
-        </div>
-        <div class="modal-body guide-content">
-            <h3>🔐 Authentication</h3>
-            <p>Log in with your Supabase credentials. The user must have appropriate RLS policies applied.</p>
-            
-            <h3>➕ Adding Techniques</h3>
-            <ol>
-                <li>Navigate to <strong>Techniques</strong> section</li>
-                <li>Click <strong>"Add New Technique"</strong></li>
-                <li>Fill in technique details:
-                    <ul>
-                        <li><strong>Name</strong>: Full technique name</li>
-                        <li><strong>Description</strong>: Detailed explanation</li>
-                        <li><strong>Cluster</strong>: Select or add new cluster</li>
-                        <li><strong>Problem</strong>: Problem category</li>
-                        <li><strong>Pipeline Stage</strong>: Where it fits in RAG pipeline</li>
-                        <li><strong>Core Mechanism</strong>: Main approach used</li>
-                    </ul>
-                </li>
-                <li><strong>Manage Relationships</strong>:
-                    <ul>
-                        <li>Start typing in relationship search box</li>
-                        <li>Select existing techniques from dropdown</li>
-                        <li>Choose relationship type (Alternative, Complementary, or Pipeline Chain)</li>
-                        <li>Click <strong>"+ Queue"</strong> to add to queue</li>
-                        <li>Click <strong>"Add Relationship"</strong> to save</li>
-                    </ul>
-                </li>
-                <li><strong>Add Illustrations</strong> (optional):
-                    <ul>
-                        <li>Upload image files to <code>illustrations/</code> directory</li>
-                        <li>Images should explain the technique visually</li>
-                    </ul>
-                </li>
-                <li>Click <strong>"Save Technique"</strong></li>
-            </ol>
-            
-            <h3>📊 Managing Other Data</h3>
-            <p>The admin dashboard allows you to manage:</p>
-            <ul>
-                <li><strong>Clusters</strong>: Group techniques by category</li>
-                <li><strong>Stages</strong>: Define pipeline stages (pre-retrieval, retrieval, post-retrieval, generation)</li>
-                <li><strong>Problems</strong>: Categorize issues techniques solve</li>
-                <li><strong>Mechanisms</strong>: Define core approaches</li>
-                <li><strong>Relationships</strong>: View and manage technique relationships</li>
-                <li><strong>Illustrations</strong>: Manage technique images</li>
-            </ul>
-            
-            <h3>🔧 Troubleshooting</h3>
-            <div class="troubleshooting">
-                <p><strong>Can't log in?</strong></p>
-                <ul>
-                    <li>Ensure user exists in Supabase Auth</li>
-                    <li>Check email is confirmed</li>
-                    <li>Verify password or use password reset</li>
-                </ul>
-                
-                <p><strong>Changes not saving?</strong></p>
-                <ul>
-                    <li>Check browser console for errors</li>
-                    <li>Verify RLS policies are applied</li>
-                    <li>Ensure correct permissions</li>
-                </ul>
-                
-                <p><strong>Images not displaying?</strong></p>
-                <ul>
-                    <li>Verify images are in <code>illustrations/</code> directory</li>
-                    <li>Check database paths match file names</li>
-                    <li>Ensure images are committed to repository</li>
-                </ul>
-            </div>
-            
-            <h3>🌐 Access URL</h3>
-            <p><code>https://maleeha-asghar.github.io/RAG-Techniques-Dashboard/admin.html</code></p>
-        </div>
-    `;
-    
-    document.getElementById('modalContent').innerHTML = guideContent;
-    document.getElementById('modalOverlay').style.display = 'flex';
-};
-
 async function checkAuth() {
     const { data:{session} } = await supabase.auth.getSession();
     if (session) {
@@ -152,7 +66,7 @@ window.switchSection = (s) => {
 
 function render() {
     const el = document.getElementById('mainContent');
-    const fn = { overview:renderOverview, techniques:renderTechniques, clusters:renderClusters, stages:renderStages, problems:renderProblems, mechanisms:renderMechanisms, relationships:renderRelationships, illustrations:renderIllustrations };
+    const fn = { overview:renderOverview, techniques:renderTechniques, clusters:renderClusters, stages:renderStages, problems:renderProblems, mechanisms:renderMechanisms, relationships:renderRelationships, illustrations:renderIllustrations, help:renderHelp };
     el.innerHTML = (fn[currentSection]||renderOverview)();
 }
 
@@ -210,20 +124,18 @@ window.filterTech = () => {
 
 window.openTechModal = (id) => {
     const t = id ? D.techniques.find(x=>x.id===id) : {};
-    // Show relationships where this technique is the source
     const techRels = id ? D.relationships.filter(r => r.technique_id === id) : [];
     const isEdit = !!id;
     const otherTechs = isEdit ? D.techniques.filter(x => x.id !== id) : D.techniques;
     
     // Existing relationships (for edit mode)
-    const existingRelsHtml = techRels.length ? techRels.map(r => {
-        const relatedName = r.related?.name || 'Unknown';
-        return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+    const existingRelsHtml = techRels.length ? techRels.map(r => 
+        `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
             <span class="badge badge-${r.relationship_type === 'alternative' ? 'warning' : r.relationship_type === 'complementary' ? 'success' : 'default'}">${r.relationship_type}</span>
-            <span style="flex:1">${relatedName}</span>
-            <button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}', '${(t.name).replace(/'/g,"\\'")} → ${(relatedName).replace(/'/g,"\\'")}')">×</button>
-        </div>`;
-    }).join('') : '<p style="color:var(--text-muted);font-size:13px">No relationships yet</p>';
+            <span style="flex:1">${r.related?.name || 'Unknown'}</span>
+            <button class="btn btn-danger btn-sm" onclick="deleteRel('${r.id}', '${(r.technique?.name||'').replace(/'/g,"\\'")} → ${(r.related?.name||'').replace(/'/g,"\\'")}')">×</button>
+        </div>`
+    ).join('') : '<p style="color:var(--text-muted);font-size:13px">No relationships yet</p>';
     
     // Pending relationships (for add mode - stored in array)
     const pendingRelsHtml = isEdit ? '' : `
@@ -269,19 +181,11 @@ window.deleteRel = async (relId, name) => {
     else { toast('Relationship deleted!', 'success'); await loadAll(); openTechModal(document.getElementById('fId').value); }
 };
 
-
 window.addRel = async (techId) => {
     const relatedId = document.getElementById('fRelTech').value;
     const relType = document.getElementById('fRelType').value;
     if (!relatedId) { toast('Select a related technique', 'error'); return; }
     if (relatedId === techId) { toast('Cannot relate technique to itself', 'error'); return; }
-    
-    // Check for duplicate relationship
-    const exists = D.relationships.some(r => 
-        r.technique_id === techId && r.related_technique_id === relatedId && r.relationship_type === relType
-    );
-    if (exists) { toast('This relationship already exists', 'error'); return; }
-    
     const { error } = await supabase.from('technique_relationships').insert({ technique_id: techId, related_technique_id: relatedId, relationship_type: relType });
     if (error) toast(error.message, 'error');
     else { toast('Relationship added!', 'success'); await loadAll(); openTechModal(techId); }
@@ -295,8 +199,8 @@ window.addPendingRel = () => {
     const tech = D.techniques.find(t => t.id === relatedId);
     if (!tech) return;
     
-    // Check for duplicates (same technique AND same relationship type)
-    if (window.pendingRels.some(r => r.related_technique_id === relatedId && r.relationship_type === relType)) {
+    // Check for duplicates
+    if (window.pendingRels.some(r => r.related_technique_id === relatedId)) {
         toast('This relationship already queued', 'error'); return;
     }
     
@@ -498,6 +402,84 @@ function renderIllustrations() {
     ${D.illustrations.map(i=>`<tr><td>${i.technique?.name||'—'}</td><td><code>${i.image_path}</code></td><td>${i.caption||'—'}</td>
     <td class="td-actions"><button class="btn btn-secondary btn-sm" onclick="openIllModal('${i.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteRecord('technique_illustrations','${i.id}','${i.technique?.name||''}')">Del</button></td></tr>`).join('')}
     </table></div>`;
+}
+
+// ── Help Guide ──
+function renderHelp() {
+    return `<h2>📖 Admin Dashboard Guide</h2>
+    <p class="subtitle">Complete guide for managing RAG Techniques</p>
+    
+    <div class="table-container" style="margin-top:20px;background:var(--bg-card);border:none">
+    <div style="padding:20px;max-height:75vh;overflow-y:auto;font-size:14px;line-height:1.6">
+    
+    <h3 style="color:var(--accent);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Getting Started</h3>
+    <p><strong>Authentication:</strong> Use the email and password of a user created in your Supabase project. The admin page is protected by Supabase Authentication and Row Level Security (RLS) policies.</p>
+    
+    <h3 style="color:var(--accent);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Adding Techniques</h3>
+    <ol style="padding-left:20px;margin:12px 0">
+        <li>Navigate to <strong>Techniques</strong> section from the navigation menu</li>
+        <li>Click <strong>+ Add Technique</strong> button</li>
+        <li>Fill in the technique details:</li>
+    </ol>
+    <ul style="padding-left:40px;margin:12px 0;color:var(--text-secondary)">
+        <li><strong>Name:</strong> Full technique name (e.g., "HyDE — Hypothetical Document Embedding")</li>
+        <li><strong>Cluster:</strong> Category group (QT, RC, AG, HR, etc.)</li>
+        <li><strong>Problem:</strong> Issue the technique solves (retrieval quality, query complexity, etc.)</li>
+        <li><strong>Pipeline Stage:</strong> Where it fits (pre-retrieval, retrieval core, post-retrieval, generation)</li>
+        <li><strong>Mechanism:</strong> Core approach used (query expansion, reranking, etc.)</li>
+        <li><strong>Description:</strong> Detailed explanation (HTML supported)</li>
+    </ul>
+    
+    <h3 style="color:var(--accent);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Managing Relationships</h3>
+    <p>In the technique form, you can add relationships to other techniques:</p>
+    <ul style="padding-left:40px;margin:12px 0;color:var(--text-secondary)">
+        <li><span class="badge badge-warning">Alternative</span> — Similar approaches that could replace this one</li>
+        <li><span class="badge badge-success">Complementary</span> — Techniques that work well together</li>
+        <li><span class="badge badge-default">Pipeline</span> — Next step in a pipeline sequence</li>
+    </ul>
+    <p><strong>For new techniques:</strong> Select relationships and click <strong>+ Queue</strong>. They will be saved together when you click <strong>Create</strong>.</p>
+    <p><strong>For existing techniques:</strong> Click <strong>+ Add</strong> to save immediately.</p>
+    
+    <h3 style="color:var(--accent);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Managing Reference Data</h3>
+    <p>The admin dashboard also allows you to manage reference tables:</p>
+    <ul style="padding-left:40px;margin:12px 0;color:var(--text-secondary)">
+        <li><strong>Clusters:</strong> Category groups with colors and descriptions</li>
+        <li><strong>Stages:</strong> Pipeline stages (pre-retrieval, retrieval core, post-retrieval, generation)</li>
+        <li><strong>Problems:</strong> Issue categories techniques address</li>
+        <li><strong>Mechanisms:</strong> Core approaches and methods</li>
+    </ul>
+    
+    <h3 style="color:var(--accent);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Managing Illustrations</h3>
+    <p>Add image paths for technique visualizations:</p>
+    <ul style="padding-left:40px;margin:12px 0;color:var(--text-secondary)">
+        <li>Store image files in the <code>illustrations/</code> directory</li>
+        <li>Add the image path in format: <code>illustrations/Technique Name.png</code></li>
+        <li>Optional caption can describe the illustration</li>
+    </ul>
+    
+    <h3 style="color:var(--accent);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Troubleshooting</h3>
+    <p><strong>Can't log in?</strong></p>
+    <ul style="padding-left:40px;margin:12px 0;color:var(--text-secondary)">
+        <li>Ensure user exists in Supabase Auth (Authentication → Users)</li>
+        <li>Check user's email is confirmed</li>
+        <li>Verify RLS policies are applied (run setup_admin_policies.sql)</li>
+    </ul>
+    <p><strong>Changes not saving?</strong></p>
+    <ul style="padding-left:40px;margin:12px 0;color:var(--text-secondary)">
+        <li>Check browser console for error messages</li>
+        <li>Verify you're logged in (session may have expired)</li>
+        <li>Ensure all required fields are filled</li>
+    </ul>
+    
+    <h3 style="color:var(--accent);margin:24px 0 12px;border-bottom:1px solid var(--border);padding-bottom:8px">Security Notes</h3>
+    <ul style="padding-left:40px;margin:12px 0;color:var(--text-secondary)">
+        <li>Never expose the <code>SERVICE_ROLE_KEY</code> — it bypasses all RLS policies</li>
+        <li>The <code>ANON_KEY</code> is safe to expose as RLS policies control access</li>
+        <li>Always run <code>setup_admin_policies.sql</code> to enable authenticated user access</li>
+        <li>Delete or disable admin users when no longer needed</li>
+    </ul>
+    
+    </div></div>`;
 }
 
 window.openIllModal = (id) => {
