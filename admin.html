@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Techniques — Admin</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="login-container" id="loginScreen">
+    <div class="login-box">
+        <h1>🔐 Admin Login</h1>
+        <p>Sign in to manage the RAG Techniques database</p>
+        <div class="error" id="loginError"></div>
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="admin@example.com">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="handleLogin()">Sign In</button>
+    </div>
+</div>
+
+<div class="app" id="adminApp">
+    <div class="sidebar">
+        <div class="sidebar-brand"><h2>RAG Admin</h2><span id="adminEmail"></span></div>
+        <div class="nav-item active" data-section="overview" onclick="switchSection('overview')">Overview</div>
+        <div class="nav-item" data-section="techniques" onclick="switchSection('techniques')">Techniques</div>
+        <div class="nav-item" data-section="clusters" onclick="switchSection('clusters')">Clusters</div>
+        <div class="nav-item" data-section="stages" onclick="switchSection('stages')">Stages</div>
+        <div class="nav-item" data-section="problems" onclick="switchSection('problems')">Problems</div>
+        <div class="nav-item" data-section="mechanisms" onclick="switchSection('mechanisms')">Mechanisms</div>
+        <div class="nav-item" data-section="relationships" onclick="switchSection('relationships')">Relationships</div>
+        <div class="nav-item" data-section="illustrations" onclick="switchSection('illustrations')">Illustrations</div>
+        <div class="nav-spacer"></div>
+        <div class="nav-item" onclick="window.open('techniques.html','_blank')">↗ View Dashboard</div>
+        <div class="nav-item logout" onclick="handleLogout()">Sign Out</div>
+    </div>
+    <div class="main" id="mainContent"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modalContent"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>
