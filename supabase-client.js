@@ -52,7 +52,8 @@ export async function getTechniques() {
             stages!inner(*),
             problems!inner(*),
             mechanisms!inner(*),
-            technique_illustrations(image_path)
+            technique_illustrations(image_path),
+            "references"
         `)
         .order('name');
     
@@ -123,6 +124,14 @@ export async function getDataInLegacyFormat() {
         }
     });
     
+    // Build REFERENCES object
+    const REFERENCES = {};
+    techniques.forEach(t => {
+        if (t.references) {
+            REFERENCES[t.name] = t.references;
+        }
+    });
+    
     // Build TECHNIQUE_IMAGES object
     const TECHNIQUE_IMAGES = {};
     techniques.forEach(t => {
@@ -131,7 +140,7 @@ export async function getDataInLegacyFormat() {
         }
     });
     
-    return { CLUSTERS, DATA, DESCRIPTIONS, TECHNIQUE_IMAGES };
+    return { CLUSTERS, DATA, DESCRIPTIONS, REFERENCES, TECHNIQUE_IMAGES };
 }
 
 /**
