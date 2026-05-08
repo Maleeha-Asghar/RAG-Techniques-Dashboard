@@ -16,6 +16,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ============================================
 let clustersCache = null;
 let techniquesCache = null;
+let gradesCache = null;
 
 // ============================================
 // API FUNCTIONS
@@ -34,6 +35,35 @@ export async function getClusters() {
     
     if (error) throw error;
     clustersCache = data;
+    return data;
+}
+
+/**
+ * Fetch all grades for filtering
+ */
+export async function getGrades() {
+    if (gradesCache) return gradesCache;
+    
+    const { data, error } = await supabase
+        .from('grades')
+        .select('*')
+        .order('display_order');
+    
+    if (error) {
+        // Return default grades if table doesn't exist yet
+        return [
+            {id:'a-plus', name:'A+', min_score:8.50, max_score:10.00, display_order:1},
+            {id:'a', name:'A', min_score:8.00, max_score:8.49, display_order:2},
+            {id:'a-minus', name:'A-', min_score:7.50, max_score:7.99, display_order:3},
+            {id:'b-plus', name:'B+', min_score:7.00, max_score:7.49, display_order:4},
+            {id:'b', name:'B', min_score:6.50, max_score:6.99, display_order:5},
+            {id:'b-minus', name:'B-', min_score:6.00, max_score:6.49, display_order:6},
+            {id:'c-plus', name:'C+', min_score:5.50, max_score:5.99, display_order:7},
+            {id:'c', name:'C', min_score:0.00, max_score:5.49, display_order:8}
+        ];
+    }
+    
+    gradesCache = data;
     return data;
 }
 
@@ -113,7 +143,22 @@ export async function getDataInLegacyFormat() {
         p: t.problems.name,
         s: t.stages.name,
         m: t.mechanisms.name,
-        sim: t.technique_relationships.map(r => r.related_technique?.name).filter(Boolean)
+        sim: t.technique_relationships.map(r => r.related_technique?.name).filter(Boolean),
+        grade: t.grade,
+        score: t.overall_score,
+        scores: {
+            usefulness: t.score_usefulness,
+            simplicity: t.score_simplicity,
+            latency: t.score_latency,
+            cost: t.score_cost,
+            scalability: t.score_scalability,
+            production: t.score_production,
+            novelty: t.score_novelty,
+            maintenance: t.score_maintenance
+        },
+        recommended_for: t.recommended_for,
+        key_limitation: t.key_limitation,
+        implementation_notes: t.implementation_notes
     }));
     
     // Build DESCRIPTIONS object

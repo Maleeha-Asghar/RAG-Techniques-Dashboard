@@ -6,14 +6,17 @@
     <title>Advanced RAG Techniques</title>
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
-        :root{--bg-body:#f8fafc;--bg-card:#fff;--bg-panel:#fff;--bg-toolbar:#fff;--bg-hover:#f1f5f9;--bg-input:#fff;--bg-sidebar:#fff;--text-primary:#0f172a;--text-secondary:#1e293b;--text-muted:#64748b;--text-label:#475569;--border-color:#e2e8f0;--border-input:#cbd5e1;--shadow-sm:0 1px 3px rgba(0,0,0,0.1);--shadow-md:0 4px 12px rgba(59,130,246,0.15);--shadow-lg:-4px 0 20px rgba(0,0,0,0.1);--accent-blue:#3b82f6;--accent-light:#eff6ff;--tag-problem-bg:#dbeafe;--tag-problem-text:#1e40af;--tag-stage-bg:#dcfce7;--tag-stage-text:#166534;--tag-mech-bg:#f3e8ff;--tag-mech-text:#7c3aed;--chip-bg:#f8fafc;--chip-hover-bg:#eff6ff;--overlay-bg:rgba(0,0,0,0.3)}
-        [data-theme="dark"]{--bg-body:#0f172a;--bg-card:#1e293b;--bg-panel:#1e293b;--bg-toolbar:#1e293b;--bg-hover:#334155;--bg-input:#334155;--bg-sidebar:#1e293b;--text-primary:#f1f5f9;--text-secondary:#e2e8f0;--text-muted:#94a3b8;--text-label:#cbd5e1;--border-color:#334155;--border-input:#475569;--shadow-sm:0 1px 3px rgba(0,0,0,0.3);--shadow-md:0 4px 12px rgba(0,0,0,0.4);--shadow-lg:-4px 0 20px rgba(0,0,0,0.5);--accent-blue:#3b82f6;--accent-light:#1e3a8a;--tag-problem-bg:#1e3a8a;--tag-problem-text:#93bbfc;--tag-stage-bg:#14532d;--tag-stage-text:#86efac;--tag-mech-bg:#581c87;--tag-mech-text:#d8b4fe;--chip-bg:#1e293b;--chip-hover-bg:#334155;--overlay-bg:rgba(0,0,0,0.6)}
+        :root{--bg-body:#f8fafc;--bg-card:#fff;--bg-panel:#fff;--bg-toolbar:#fff;--bg-hover:#f1f5f9;--bg-input:#fff;--bg-sidebar:#fff;--text-primary:#0f172a;--text-secondary:#1e293b;--text-muted:#64748b;--text-label:#475569;--border-color:#e2e8f0;--border-input:#cbd5e1;--shadow-sm:0 1px 3px rgba(0,0,0,0.1);--shadow-md:0 4px 12px rgba(59,130,246,0.15);--shadow-lg:-4px 0 20px rgba(0,0,0,0.1);--accent-blue:#3b82f6;--accent-light:#eff6ff;--tag-problem-bg:#dbeafe;--tag-problem-text:#1e40af;--tag-stage-bg:#dcfce7;--tag-stage-text:#166534;--tag-mech-bg:#f3e8ff;--tag-mech-text:#7c3aed;--tag-grade-bg:#fef3c7;--tag-grade-text:#92400e;--chip-bg:#f8fafc;--chip-hover-bg:#eff6ff;--overlay-bg:rgba(0,0,0,0.3)}
+        [data-theme="dark"]{--bg-body:#0f172a;--bg-card:#1e293b;--bg-panel:#1e293b;--bg-toolbar:#1e293b;--bg-hover:#334155;--bg-input:#334155;--bg-sidebar:#1e293b;--text-primary:#f1f5f9;--text-secondary:#e2e8f0;--text-muted:#94a3b8;--text-label:#cbd5e1;--border-color:#334155;--border-input:#475569;--shadow-sm:0 1px 3px rgba(0,0,0,0.3);--shadow-md:0 4px 12px rgba(0,0,0,0.4);--shadow-lg:-4px 0 20px rgba(0,0,0,0.5);--accent-blue:#3b82f6;--accent-light:#1e3a8a;--tag-problem-bg:#1e3a8a;--tag-problem-text:#93bbfc;--tag-stage-bg:#14532d;--tag-stage-text:#86efac;--tag-mech-bg:#581c87;--tag-mech-text:#d8b4fe;--tag-grade-bg:#78350f;--tag-grade-text:#fcd34d;--chip-bg:#1e293b;--chip-hover-bg:#334155;--overlay-bg:rgba(0,0,0,0.6)}
         body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:var(--bg-body);color:var(--text-secondary);line-height:1.5;transition:background 0.3s,color 0.3s}
         .container{max-width:1400px;margin:0 auto;padding:20px}
         h1{font-size:28px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px;text-align:center}
         h1 .gradient{background:linear-gradient(135deg,var(--accent-blue),#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
         .subtitle{font-size:14px;color:var(--text-muted);margin-bottom:24px}
-        .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px;background:var(--bg-toolbar);border-radius:12px;border:1px solid var(--border-color);margin-bottom:24px;box-shadow:var(--shadow-sm)}
+        .toolbar{display:flex;flex-wrap:wrap;align-items:center;padding:16px;background:var(--bg-toolbar);border-radius:12px;border:1px solid var(--border-color);margin-bottom:24px;box-shadow:var(--shadow-sm);gap:12px}
+        .toolbar-row{display:flex;gap:12px;align-items:center;width:100%}
+        .toolbar-row:first-child{margin-bottom:4px}
+        .toolbar-row:last-child{flex-wrap:wrap;justify-content:center}
         input[type=search]{flex:1;min-width:200px;height:40px;font-size:14px;padding:0 16px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-input);color:var(--text-secondary);outline:none}
         input[type=search]:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-light)}
         select{height:40px;padding:0 12px;font-size:14px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-input);color:var(--text-secondary);cursor:pointer;outline:none;min-width:180px}
@@ -212,6 +215,7 @@
         .tag-problem{background:var(--tag-problem-bg);color:var(--tag-problem-text)}
         .tag-stage{background:var(--tag-stage-bg);color:var(--tag-stage-text)}
         .tag-mech{background:var(--tag-mech-bg);color:var(--tag-mech-text)}
+        .tag-grade{background:var(--tag-grade-bg);color:var(--tag-grade-text);font-weight:600}
         .detail-panel{background:var(--bg-panel);border-left-color:var(--border-color)}
         .panel-close{color:var(--text-muted)}
         .panel-close:hover{background:var(--bg-hover);color:var(--text-primary)}
@@ -241,49 +245,64 @@
     <div class="container">
         <h1><span class="gradient">Advanced RAG Techniques</span></h1>
         <div class="toolbar">
-            <a href="index.html" class="menu-btn" style="text-decoration:none" aria-label="Home">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                Home
-            </a>
-            <button class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-            <input type="search" id="searchBox" placeholder="Search techniques...">
-            <select id="clusterFilter">
-                <option value="">Categories</option>
-                <option value="QT">Query Transformation</option>
-                <option value="RC">Routing & Classification</option>
-                <option value="AG">Agentic Systems</option>
-                <option value="HR">Hybrid & Ensemble Retrieval</option>
-                <option value="CK">Chunking Strategies</option>
-                <option value="HI">Hierarchical Indexing</option>
-                <option value="MV">Multi-Vector Embeddings</option>
-                <option value="MM">Multimodal Retrieval</option>
-                <option value="RR">Reranking & Filtering</option>
-                <option value="CC">Context Compression</option>
-                <option value="VC">Verification & Correction</option>
-                <option value="KG">Knowledge Graph</option>
-                <option value="TR">Training & Alignment</option>
-                <option value="MS">Memory & State</option>
-            </select>
-            <select id="stageFilter">
-                <option value="">Pipeline Stages</option>
-                <option value="pre-retrieval">Pre-Retrieval</option>
-                <option value="retrieval core">Retrieval Core</option>
-                <option value="post-retrieval">Post-Retrieval</option>
-                <option value="generation layer">Generation Layer</option>
-                <option value="cross-session">Cross-Session</option>
-            </select>
-            <select id="problemFilter">
-                <option value="">Problem Addressed</option>
-                <option value="Retrieval Quality">Retrieval Quality</option>
-                <option value="Query Complexity">Query Complexity</option>
-                <option value="Context Loss">Context Loss</option>
-                <option value="Retrieval Noise">Retrieval Noise</option>
-                <option value="Generation Faithfulness">Generation Faithfulness</option>
-                <option value="Cross-Session">Cross-Session</option>
-            </select>
-            <span class="stats" id="statsLabel">Techniques</span>
+            <div class="toolbar-row">
+                <a href="index.html" class="menu-btn" style="text-decoration:none" aria-label="Home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    Home
+                </a>
+                <button class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <input type="search" id="searchBox" placeholder="Search techniques...">
+                <span class="stats" id="statsLabel">Techniques</span>
+            </div>
+            <div class="toolbar-row">
+                <select id="clusterFilter">
+                    <option value="">Categories</option>
+                    <option value="QT">Query Transformation</option>
+                    <option value="RC">Routing & Classification</option>
+                    <option value="AG">Agentic Systems</option>
+                    <option value="HR">Hybrid & Ensemble Retrieval</option>
+                    <option value="CK">Chunking Strategies</option>
+                    <option value="HI">Hierarchical Indexing</option>
+                    <option value="MV">Multi-Vector Embeddings</option>
+                    <option value="MM">Multimodal Retrieval</option>
+                    <option value="RR">Reranking & Filtering</option>
+                    <option value="CC">Context Compression</option>
+                    <option value="VC">Verification & Correction</option>
+                    <option value="KG">Knowledge Graph</option>
+                    <option value="TR">Training & Alignment</option>
+                    <option value="MS">Memory & State</option>
+                </select>
+                <select id="stageFilter">
+                    <option value="">Pipeline Stages</option>
+                    <option value="pre-retrieval">Pre-Retrieval</option>
+                    <option value="retrieval core">Retrieval Core</option>
+                    <option value="post-retrieval">Post-Retrieval</option>
+                    <option value="generation layer">Generation Layer</option>
+                    <option value="cross-session">Cross-Session</option>
+                </select>
+                <select id="problemFilter">
+                    <option value="">Problem Addressed</option>
+                    <option value="Retrieval Quality">Retrieval Quality</option>
+                    <option value="Query Complexity">Query Complexity</option>
+                    <option value="Context Loss">Context Loss</option>
+                    <option value="Retrieval Noise">Retrieval Noise</option>
+                    <option value="Generation Faithfulness">Generation Faithfulness</option>
+                    <option value="Cross-Session">Cross-Session</option>
+                </select>
+                <select id="gradeFilter">
+                    <option value="">Grade</option>
+                    <option value="A+">A+</option>
+                    <option value="A">A</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="B-">B-</option>
+                    <option value="C+">C+</option>
+                    <option value="C">C</option>
+                </select>
+            </div>
         </div>
         <div id="root"></div>
     </div>
@@ -400,6 +419,10 @@
                 dataLoaded = true;
                 
                 console.log(`Loaded ${DATA.length} techniques from Supabase`);
+                const gradeDebug = {};
+                DATA.forEach(d => { if (d.grade) gradeDebug[d.grade] = (gradeDebug[d.grade] || 0) + 1; });
+                console.log('Grade distribution in DATA:', gradeDebug);
+                if (DATA.length > 0) console.log('Sample technique grade:', JSON.stringify(DATA[0].grade), 'type:', typeof DATA[0].grade);
                 
                 // Expand all clusters by default
                 expandedClusters = new Set(CLUSTERS.map(c => c.id));
@@ -414,6 +437,7 @@
                 const catParam = urlParams.get('category');
                 const stageParam = urlParams.get('stage');
                 const problemParam = urlParams.get('problem');
+                const gradeParam = urlParams.get('grade');
                 if (catParam) {
                     document.getElementById('clusterFilter').value = catParam;
                 }
@@ -422,6 +446,9 @@
                 }
                 if (problemParam) {
                     document.getElementById('problemFilter').value = problemParam;
+                }
+                if (gradeParam) {
+                    document.getElementById('gradeFilter').value = gradeParam;
                 }
                 
                 // Attach event listeners after data is loaded
@@ -447,6 +474,7 @@
             document.getElementById('clusterFilter').addEventListener('change', render);
             document.getElementById('stageFilter').addEventListener('change', render);
             document.getElementById('problemFilter').addEventListener('change', render);
+            document.getElementById('gradeFilter').addEventListener('change', render);
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
@@ -470,13 +498,25 @@
             const clusterF = document.getElementById('clusterFilter').value;
             const stageF = document.getElementById('stageFilter').value;
             const problemF = document.getElementById('problemFilter').value;
+            const gradeF = document.getElementById('gradeFilter').value;
+
+            if (gradeF) {
+                const gradeMatchCount = DATA.filter(d => d.grade && d.grade.trim() === gradeF).length;
+                console.log(`Grade filter: "${gradeF}", matching techniques: ${gradeMatchCount}, total DATA: ${DATA.length}`);
+                if (DATA.length > 0 && gradeMatchCount === 0) {
+                    const sampleGrades = DATA.slice(0, 5).map(d => ({ name: d.t, grade: d.grade, type: typeof d.grade }));
+                    console.log('Sample grades in DATA:', sampleGrades);
+                }
+            }
 
             const filtered = DATA.filter(d => {
-                const matchQ = !q || d.t.toLowerCase().includes(q) || d.p.includes(q) || d.s.includes(q) || d.m.includes(q) || getCluster(d.c).name.toLowerCase().includes(q);
+                const cluster = getCluster(d.c);
+                const matchQ = !q || d.t.toLowerCase().includes(q) || d.p.includes(q) || d.s.includes(q) || d.m.includes(q) || (cluster && cluster.name.toLowerCase().includes(q));
                 const matchC = !clusterF || d.c === clusterF;
-                const matchS = !stageF || d.s === stageF;
-                const matchP = !problemF || d.p === problemF;
-                return matchQ && matchC && matchS && matchP;
+                const matchS = !stageF || d.s?.toLowerCase() === stageF.toLowerCase();
+                const matchP = !problemF || d.p?.toLowerCase() === problemF.toLowerCase();
+                const matchG = !gradeF || (d.grade && d.grade.trim() === gradeF);
+                return matchQ && matchC && matchS && matchP && matchG;
             });
 
             document.getElementById('statsLabel').textContent = filtered.length + ' of ' + DATA.length + ' techniques';
@@ -522,6 +562,12 @@
             if (!html) html = '<div class="no-results"><div style="font-size:48px;margin-bottom:16px">🔍</div>No techniques match your filters.</div>';
             document.getElementById('root').innerHTML = html;
         }
+
+        function toggleScoreBreakdown() {
+            const panel = document.getElementById('scoreBreakdownPanel');
+            if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+        window.toggleScoreBreakdown = toggleScoreBreakdown;
 
         function toggleCluster(id) {
             if (expandedClusters.has(id)) {
@@ -596,6 +642,35 @@
                     <div class="panel-val">${d.m}</div>
                 </div>
                 <div class="panel-section">
+                    <div class="panel-label">Grade & Score</div>
+                    <div class="panel-val" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <span class="tag tag-grade" style="font-size:13px;padding:4px 10px">${d.grade || 'N/A'}</span>
+                        <span>${d.score ? d.score + '/10' : ''}</span>
+                        ${d.scores && (d.scores.usefulness || d.scores.simplicity) ? `<button onclick="toggleScoreBreakdown()" style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;font-size:12px;font-weight:500;border:1px solid var(--border-input);border-radius:6px;background:var(--bg-input);color:var(--text-muted);cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='var(--bg-hover)';this.style.borderColor='var(--text-muted)'" onmouseout="this.style.background='var(--bg-input)';this.style.borderColor='var(--border-input)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>Score Breakdown</button>` : ''}
+                    </div>
+                </div>
+                <div id="scoreBreakdownPanel" style="display:none">
+                    <div class="panel-section" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;margin:4px 0">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                            <div class="panel-label" style="margin:0">Score Breakdown <span style="font-size:11px;color:var(--text-muted)">(out of 10)</span></div>
+                            <button onclick="toggleScoreBreakdown()" style="width:24px;height:24px;padding:2px;border:none;border-radius:4px;background:transparent;color:var(--text-muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">✕</button>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                            ${d.scores.usefulness ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Usefulness <span style="color:var(--text-muted)">(25%)</span></span><strong>${d.scores.usefulness}</strong></div>` : ''}
+                            ${d.scores.simplicity ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Simplicity <span style="color:var(--text-muted)">(15%)</span></span><strong>${d.scores.simplicity}</strong></div>` : ''}
+                            ${d.scores.latency ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Latency <span style="color:var(--text-muted)">(15%)</span></span><strong>${d.scores.latency}</strong></div>` : ''}
+                            ${d.scores.cost ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Cost Efficiency <span style="color:var(--text-muted)">(15%)</span></span><strong>${d.scores.cost}</strong></div>` : ''}
+                            ${d.scores.scalability ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Scalability <span style="color:var(--text-muted)">(10%)</span></span><strong>${d.scores.scalability}</strong></div>` : ''}
+                            ${d.scores.production ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Production <span style="color:var(--text-muted)">(10%)</span></span><strong>${d.scores.production}</strong></div>` : ''}
+                            ${d.scores.novelty ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Novelty <span style="color:var(--text-muted)">(5%)</span></span><strong>${d.scores.novelty}</strong></div>` : ''}
+                            ${d.scores.maintenance ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Maintenance <span style="color:var(--text-muted)">(5%)</span></span><strong>${d.scores.maintenance}</strong></div>` : ''}
+                        </div>
+                        ${d.recommended_for ? `<div style="margin-top:10px;padding:8px 12px;background:var(--tag-stage-bg);color:var(--tag-stage-text);border-radius:6px;font-size:13px"><strong>Recommended:</strong> ${d.recommended_for}</div>` : ''}
+                        ${d.key_limitation ? `<div style="margin-top:6px;padding:8px 12px;background:var(--tag-problem-bg);color:var(--tag-problem-text);border-radius:6px;font-size:13px"><strong>Limitation:</strong> ${d.key_limitation}</div>` : ''}
+                        ${d.implementation_notes ? `<div style="margin-top:6px;padding:8px 12px;background:var(--bg-hover);border-radius:6px;font-size:13px;color:var(--text-secondary)"><strong>Notes:</strong> ${d.implementation_notes}</div>` : ''}
+                    </div>
+                </div>
+                <div class="panel-section">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                         <div class="panel-label">Description</div>
                         <button id="copyBtn" onclick="copyDescription(this)" style="width:32px;height:32px;padding:6px;border:1px solid var(--border-input);border-radius:6px;background:var(--bg-input);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--bg-hover)';this.style.borderColor='var(--text-muted)'" onmouseout="if(!this.dataset.copied){this.style.background='var(--bg-input)';this.style.borderColor='var(--border-input)'}">
@@ -662,6 +737,7 @@
         document.getElementById('clusterFilter').addEventListener('change', render);
         document.getElementById('stageFilter').addEventListener('change', render);
         document.getElementById('problemFilter').addEventListener('change', render);
+        document.getElementById('gradeFilter').addEventListener('change', render);
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -963,6 +1039,7 @@
             document.getElementById('clusterFilter').value = clusterId;
             document.getElementById('stageFilter').value = '';
             document.getElementById('problemFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
             render();
             
             expandedClusters.add(clusterId);
@@ -984,6 +1061,7 @@
             document.getElementById('clusterFilter').value = '';
             document.getElementById('stageFilter').value = stageId;
             document.getElementById('problemFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
             render();
             
             // Explicitly close sidebar instead of toggle to prevent double-toggle issue
@@ -997,6 +1075,7 @@
             document.getElementById('clusterFilter').value = '';
             document.getElementById('stageFilter').value = '';
             document.getElementById('problemFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
             document.getElementById('searchBox').value = '';
             
             CLUSTERS.forEach(cl => expandedClusters.add(cl.id));

@@ -45,7 +45,7 @@ supabase.auth.onAuthStateChange((e) => {
 // ── Data ──
 async function loadAll() {
     const [t,c,s,p,m,r,i] = await Promise.all([
-        supabase.from('techniques').select('*,clusters(id,name,color),stages(id,name),problems(id,name),mechanisms(id,name)').order('name'),
+        supabase.from('techniques').select('*,clusters(id,name,color),stages(id,name),problems(id,name),mechanisms(id,name),"references"').order('name'),
         supabase.from('clusters').select('*').order('name'),
         supabase.from('stages').select('*').order('display_order'),
         supabase.from('problems').select('*').order('name'),
@@ -166,6 +166,7 @@ window.openTechModal = (id) => {
         <div><label>Mechanism</label><select id="fMechanism"><option value="">Select...</option>${selOpts(D.mechanisms,t.mechanism_id)}</select></div>
     </div>
     <label>Description</label><textarea id="fDesc">${t.description||''}</textarea>
+    <label>References (one per line or comma-separated)</label><textarea id="fRefs">${t.references||''}</textarea>
     ${relSection}
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveTech()">${isEdit?'Update':'Create'}</button></div>`;
     
@@ -233,7 +234,7 @@ window.removePendingRel = (idx) => {
 
 window.saveTech = async () => {
     const id = document.getElementById('fId').value;
-    const p = { name:document.getElementById('fName').value, cluster_id:document.getElementById('fCluster').value, stage_id:document.getElementById('fStage').value, problem_id:document.getElementById('fProblem').value, mechanism_id:document.getElementById('fMechanism').value, description:document.getElementById('fDesc').value||null };
+    const p = { name:document.getElementById('fName').value, cluster_id:document.getElementById('fCluster').value, stage_id:document.getElementById('fStage').value, problem_id:document.getElementById('fProblem').value, mechanism_id:document.getElementById('fMechanism').value, description:document.getElementById('fDesc').value||null, references:document.getElementById('fRefs').value||null };
     if (!p.name||!p.cluster_id||!p.stage_id||!p.problem_id||!p.mechanism_id) { toast('All fields except description required','error'); return; }
     
     if (id) {
