@@ -441,6 +441,25 @@
                         </div>
                     </div>
                 </div>
+                <div class="multi-select" id="yearFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('yearFilter')">
+                        <span>Publication Year</span>
+                        <span class="count" id="yearCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="yearArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="yearFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="2026" onchange="updateMultiSelect('yearFilter')"> 2026</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2025" onchange="updateMultiSelect('yearFilter')"> 2025</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2024" onchange="updateMultiSelect('yearFilter')"> 2024</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2023" onchange="updateMultiSelect('yearFilter')"> 2023</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2022" onchange="updateMultiSelect('yearFilter')"> 2022</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2021" onchange="updateMultiSelect('yearFilter')"> 2021</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2020" onchange="updateMultiSelect('yearFilter')"> 2020</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('yearFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="root"></div>
@@ -747,6 +766,7 @@
             const latValues = getMultiSelectValues('latFilter');
             const costValues = getMultiSelectValues('costFilter');
             const popValues = getMultiSelectValues('popFilter');
+            const yearValues = getMultiSelectValues('yearFilter');
 
             const filtered = DATA.filter(d => {
                 const cluster = getCluster(d.c);
@@ -759,7 +779,8 @@
                 const matchLat = latValues.length === 0 || latValues.includes(String(d.latency));
                 const matchCost = costValues.length === 0 || costValues.includes(String(d.cost));
                 const matchPop = popValues.length === 0 || popValues.includes(String(d.popularity));
-                return matchQ && matchC && matchS && matchP && matchPerf && matchSimp && matchLat && matchCost && matchPop;
+                const matchYear = yearValues.length === 0 || (d.publication_year && yearValues.includes(String(d.publication_year)));
+                return matchQ && matchC && matchS && matchP && matchPerf && matchSimp && matchLat && matchCost && matchPop && matchYear;
             });
 
             document.getElementById('statsLabel').textContent = filtered.length + ' of ' + DATA.length + ' techniques';
@@ -774,7 +795,7 @@
                 const isExpanded = expandedClusters.has(cl.id);
                 const hasItems = items && items.length > 0;
                 
-                const hasActiveFilters = clusterValues.length > 0 || stageValues.length > 0 || problemValues.length > 0 || perfValues.length > 0 || simpValues.length > 0 || latValues.length > 0 || costValues.length > 0 || popValues.length > 0 || q;
+                const hasActiveFilters = clusterValues.length > 0 || stageValues.length > 0 || problemValues.length > 0 || perfValues.length > 0 || simpValues.length > 0 || latValues.length > 0 || costValues.length > 0 || popValues.length > 0 || yearValues.length > 0 || q;
                 if (!hasItems && hasActiveFilters) return;
                 
                 html += `<div class="cluster-section">
@@ -901,6 +922,12 @@
                     <div class="panel-label">Core Mechanism</div>
                     <div class="panel-val">${d.m}</div>
                 </div>
+                ${d.publication_year ? `
+                <div class="panel-section">
+                    <div class="panel-label">Publication Year</div>
+                    <div class="panel-val">${d.publication_year}${d.publication_source ? ` (${d.publication_source})` : ''}</div>
+                </div>
+                ` : ''}
                 <div class="panel-section">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                         <div class="panel-label">Description</div>
@@ -984,8 +1011,8 @@
             
             // Destroy existing chart if any
             if (radarChart) {
-                canvas.parentElement.style.display = 'none';
-                return;
+                radarChart.destroy();
+                radarChart = null;
             }
             canvas.parentElement.style.display = 'flex';
             
@@ -1413,6 +1440,7 @@
             clearMultiSelect('latFilter');
             clearMultiSelect('costFilter');
             clearMultiSelect('popFilter');
+            clearMultiSelect('yearFilter');
             const cb = document.querySelector('#clusterFilterDropdown input[value="' + clusterId + '"]');
             if (cb) cb.checked = true;
             updateMultiSelect('clusterFilter');
@@ -1442,6 +1470,7 @@
             clearMultiSelect('latFilter');
             clearMultiSelect('costFilter');
             clearMultiSelect('popFilter');
+            clearMultiSelect('yearFilter');
             const cb = document.querySelector('#stageFilterDropdown input[value="' + stageId + '"]');
             if (cb) cb.checked = true;
             updateMultiSelect('stageFilter');
@@ -1463,6 +1492,7 @@
             clearMultiSelect('latFilter');
             clearMultiSelect('costFilter');
             clearMultiSelect('popFilter');
+            clearMultiSelect('yearFilter');
             document.getElementById('searchBox').value = '';
             
             CLUSTERS.forEach(cl => expandedClusters.add(cl.id));
@@ -1480,6 +1510,7 @@
             // Filter to show only this cluster
             clearMultiSelect('clusterFilter');
             clearMultiSelect('popFilter');
+            clearMultiSelect('yearFilter');
             const cb = document.querySelector('#clusterFilterDropdown input[value="' + clusterId + '"]');
             if (cb) cb.checked = true;
             updateMultiSelect('clusterFilter');
