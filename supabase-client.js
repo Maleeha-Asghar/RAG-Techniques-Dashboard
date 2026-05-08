@@ -77,7 +77,11 @@ export async function getTechniques() {
     const { data: techniques, error: err1 } = await supabase
         .from('techniques')
         .select(`
-            *,
+            id, name, cluster_id, stage_id, problem_id, mechanism_id, description,
+            grade, overall_score,
+            score_usefulness, score_simplicity, score_latency, score_cost,
+            score_scalability, score_production, score_novelty, score_maintenance,
+            recommended_for, key_limitation, implementation_notes,
             clusters!inner(*),
             stages!inner(*),
             problems!inner(*),
@@ -88,6 +92,12 @@ export async function getTechniques() {
         .order('name');
     
     if (err1) throw err1;
+    
+    // Debug: check if grade column is returned
+    if (techniques.length > 0) {
+        console.log('Raw technique keys:', Object.keys(techniques[0]));
+        console.log('Raw grade value:', techniques[0].grade, 'type:', typeof techniques[0].grade);
+    }
     
     // Second query: relationships separately
     const { data: relationships, error: err2 } = await supabase
