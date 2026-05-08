@@ -182,33 +182,49 @@
     </section>
  
 
-    <script>
-        const CLUSTERS = [
-            {id:"QT",name:"Query Transformation & Expansion",color:"#2563EB",count:42},
-            {id:"RC",name:"Routing & Query Classification",color:"#0891B2",count:28},
-            {id:"AG",name:"Agentic & Multi-Agent Systems",color:"#7C3AED",count:31},
-            {id:"HR",name:"Hybrid & Ensemble Retrieval",color:"#059669",count:19},
-            {id:"CK",name:"Chunking & Document Segmentation",color:"#DC2626",count:15},
-            {id:"HI",name:"Hierarchical & Tree-Based Indexing",color:"#EA580C",count:12},
-            {id:"MV",name:"Multi-Vector & Advanced Embeddings",color:"#BE185D",count:14},
-            {id:"MM",name:"Multimodal & Visual Retrieval",color:"#F59E0B",count:8},
-            {id:"RR",name:"Reranking & Post-Retrieval Filtering",color:"#0369A1",count:22},
-            {id:"CC",name:"Context Compression & Optimization",color:"#4338CA",count:16},
-            {id:"VC",name:"Verification & Self-Correction",color:"#0F766E",count:18},
-            {id:"KG",name:"Knowledge Graph & Structured Grounding",color:"#A16207",count:11},
-            {id:"TR",name:"Training & Alignment Methods",color:"#BE123C",count:10},
-            {id:"MS",name:"Memory & Cross-Session State",color:"#52525B",count:9}
-        ];
+    <script type="module">
+        import { getDataInLegacyFormat } from './supabase-client.js?v=3';
 
-        // Render category grid
-        const grid = document.getElementById('catGrid');
-        CLUSTERS.forEach(cl => {
-            const card = document.createElement('a');
-            card.href = `techniques.html?category=${cl.id}`;
-            card.className = 'cat-card';
-            card.innerHTML = `<span class="cat-dot" style="background:${cl.color}"></span><span class="cat-name">${cl.name}</span><span class="cat-count">${cl.count}</span>`;
-            grid.appendChild(card);
-        });
+        async function loadDynamicData() {
+            try {
+                const data = await getDataInLegacyFormat();
+                const CLUSTERS = data.CLUSTERS;
+                const DATA = data.DATA;
+
+                // Update stats
+                document.querySelector('.stat-num').textContent = DATA.length;
+                document.querySelectorAll('.stat-num')[1].textContent = CLUSTERS.length;
+
+                // Count techniques per stage
+                const stageCounts = {};
+                DATA.forEach(d => { stageCounts[d.s] = (stageCounts[d.s] || 0) + 1; });
+
+                // Update pipeline counts
+                document.querySelectorAll('.pipeline-count').forEach(el => {
+                    const name = el.previousElementSibling.textContent.trim();
+                    if (stageCounts[name]) el.textContent = stageCounts[name] + ' techniques';
+                });
+
+                // Count techniques per cluster
+                const clusterCounts = {};
+                DATA.forEach(d => { clusterCounts[d.c] = (clusterCounts[d.c] || 0) + 1; });
+
+                // Render category grid
+                const grid = document.getElementById('catGrid');
+                grid.innerHTML = '';
+                CLUSTERS.forEach(cl => {
+                    const count = clusterCounts[cl.id] || 0;
+                    const card = document.createElement('a');
+                    card.href = `techniques.html?category=${cl.id}`;
+                    card.className = 'cat-card';
+                    card.innerHTML = `<span class="cat-dot" style="background:${cl.color}"></span><span class="cat-name">${cl.name}</span><span class="cat-count">${count}</span>`;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                console.error('Failed to load dynamic data:', err);
+            }
+        }
+        loadDynamicData();
 
         // Theme
         function toggleTheme() {
