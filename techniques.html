@@ -291,16 +291,37 @@
                     <option value="Generation Faithfulness">Generation Faithfulness</option>
                     <option value="Cross-Session">Cross-Session</option>
                 </select>
-                <select id="gradeFilter">
-                    <option value="">Grade</option>
-                    <option value="A+">A+</option>
-                    <option value="A">A</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B">B</option>
-                    <option value="B-">B-</option>
-                    <option value="C+">C+</option>
-                    <option value="C">C</option>
+                <select id="perfFilter">
+                    <option value="">Performance Boost</option>
+                    <option value="5">5 - Exceptional</option>
+                    <option value="4">4 - High</option>
+                    <option value="3">3 - Moderate</option>
+                    <option value="2">2 - Low</option>
+                    <option value="1">1 - Minimal</option>
+                </select>
+                <select id="simpFilter">
+                    <option value="">Integration Simplicity</option>
+                    <option value="5">5 - Trivial</option>
+                    <option value="4">4 - Easy</option>
+                    <option value="3">3 - Moderate</option>
+                    <option value="2">2 - Complex</option>
+                    <option value="1">1 - Very Complex</option>
+                </select>
+                <select id="latFilter">
+                    <option value="">Latency</option>
+                    <option value="5">5 - Negligible</option>
+                    <option value="4">4 - Low</option>
+                    <option value="3">3 - Moderate</option>
+                    <option value="2">2 - High</option>
+                    <option value="1">1 - Very High</option>
+                </select>
+                <select id="costFilter">
+                    <option value="">Cost</option>
+                    <option value="5">5 - Very Low</option>
+                    <option value="4">4 - Low</option>
+                    <option value="3">3 - Moderate</option>
+                    <option value="2">2 - High</option>
+                    <option value="1">1 - Very High</option>
                 </select>
             </div>
         </div>
@@ -380,7 +401,7 @@
         </div>
     </div>
     <script type="module">
-        import { getDataInLegacyFormat, FALLBACK_CLUSTERS } from './supabase-client.js?v=2';
+        import { getDataInLegacyFormat, FALLBACK_CLUSTERS } from './supabase-client.js?v=3';
         
         // Helper function to render references as links
         function renderReferences(refs) {
@@ -419,10 +440,9 @@
                 dataLoaded = true;
                 
                 console.log(`Loaded ${DATA.length} techniques from Supabase`);
-                const gradeDebug = {};
-                DATA.forEach(d => { if (d.grade) gradeDebug[d.grade] = (gradeDebug[d.grade] || 0) + 1; });
-                console.log('Grade distribution in DATA:', gradeDebug);
-                if (DATA.length > 0) console.log('Sample technique grade:', JSON.stringify(DATA[0].grade), 'type:', typeof DATA[0].grade);
+                const scoreDebug = {};
+                DATA.forEach(d => { if (d.performance_boost) scoreDebug[d.performance_boost] = (scoreDebug[d.performance_boost] || 0) + 1; });
+                console.log('Performance Boost distribution in DATA:', scoreDebug);
                 
                 // Expand all clusters by default
                 expandedClusters = new Set(CLUSTERS.map(c => c.id));
@@ -437,7 +457,10 @@
                 const catParam = urlParams.get('category');
                 const stageParam = urlParams.get('stage');
                 const problemParam = urlParams.get('problem');
-                const gradeParam = urlParams.get('grade');
+                const perfParam = urlParams.get('perf');
+                const simpParam = urlParams.get('simp');
+                const latParam = urlParams.get('lat');
+                const costParam = urlParams.get('cost');
                 if (catParam) {
                     document.getElementById('clusterFilter').value = catParam;
                 }
@@ -447,9 +470,10 @@
                 if (problemParam) {
                     document.getElementById('problemFilter').value = problemParam;
                 }
-                if (gradeParam) {
-                    document.getElementById('gradeFilter').value = gradeParam;
-                }
+                if (perfParam) document.getElementById('perfFilter').value = perfParam;
+                if (simpParam) document.getElementById('simpFilter').value = simpParam;
+                if (latParam) document.getElementById('latFilter').value = latParam;
+                if (costParam) document.getElementById('costFilter').value = costParam;
                 
                 // Attach event listeners after data is loaded
                 attachEventListeners();
@@ -474,7 +498,10 @@
             document.getElementById('clusterFilter').addEventListener('change', render);
             document.getElementById('stageFilter').addEventListener('change', render);
             document.getElementById('problemFilter').addEventListener('change', render);
-            document.getElementById('gradeFilter').addEventListener('change', render);
+            document.getElementById('perfFilter').addEventListener('change', render);
+            document.getElementById('simpFilter').addEventListener('change', render);
+            document.getElementById('latFilter').addEventListener('change', render);
+            document.getElementById('costFilter').addEventListener('change', render);
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
@@ -498,16 +525,10 @@
             const clusterF = document.getElementById('clusterFilter').value;
             const stageF = document.getElementById('stageFilter').value;
             const problemF = document.getElementById('problemFilter').value;
-            const gradeF = document.getElementById('gradeFilter').value;
-
-            if (gradeF) {
-                const gradeMatchCount = DATA.filter(d => d.grade && d.grade.trim() === gradeF).length;
-                console.log(`Grade filter: "${gradeF}", matching techniques: ${gradeMatchCount}, total DATA: ${DATA.length}`);
-                if (DATA.length > 0 && gradeMatchCount === 0) {
-                    const sampleGrades = DATA.slice(0, 5).map(d => ({ name: d.t, grade: d.grade, type: typeof d.grade }));
-                    console.log('Sample grades in DATA:', sampleGrades);
-                }
-            }
+            const perfF = document.getElementById('perfFilter').value;
+            const simpF = document.getElementById('simpFilter').value;
+            const latF = document.getElementById('latFilter').value;
+            const costF = document.getElementById('costFilter').value;
 
             const filtered = DATA.filter(d => {
                 const cluster = getCluster(d.c);
@@ -515,8 +536,11 @@
                 const matchC = !clusterF || d.c === clusterF;
                 const matchS = !stageF || d.s?.toLowerCase() === stageF.toLowerCase();
                 const matchP = !problemF || d.p?.toLowerCase() === problemF.toLowerCase();
-                const matchG = !gradeF || (d.grade && d.grade.trim() === gradeF);
-                return matchQ && matchC && matchS && matchP && matchG;
+                const matchPerf = !perfF || d.performance_boost == perfF;
+                const matchSimp = !simpF || d.integration_simplicity == simpF;
+                const matchLat = !latF || d.latency == latF;
+                const matchCost = !costF || d.cost == costF;
+                return matchQ && matchC && matchS && matchP && matchPerf && matchSimp && matchLat && matchCost;
             });
 
             document.getElementById('statsLabel').textContent = filtered.length + ' of ' + DATA.length + ' techniques';
@@ -531,7 +555,7 @@
                 const isExpanded = expandedClusters.has(cl.id);
                 const hasItems = items && items.length > 0;
                 
-                if (!hasItems && (clusterF || q)) return;
+                if (!hasItems && (clusterF || q || stageF || problemF || perfF || simpF || latF || costF)) return;
                 
                 html += `<div class="cluster-section">
                     <div class="cluster-header ${!isExpanded ? 'collapsed' : ''}" onclick="toggleCluster('${cl.id}')">
@@ -562,12 +586,6 @@
             if (!html) html = '<div class="no-results"><div style="font-size:48px;margin-bottom:16px">🔍</div>No techniques match your filters.</div>';
             document.getElementById('root').innerHTML = html;
         }
-
-        function toggleScoreBreakdown() {
-            const panel = document.getElementById('scoreBreakdownPanel');
-            if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-        }
-        window.toggleScoreBreakdown = toggleScoreBreakdown;
 
         function toggleCluster(id) {
             if (expandedClusters.has(id)) {
@@ -642,35 +660,6 @@
                     <div class="panel-val">${d.m}</div>
                 </div>
                 <div class="panel-section">
-                    <div class="panel-label">Grade & Score</div>
-                    <div class="panel-val" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                        <span class="tag tag-grade" style="font-size:13px;padding:4px 10px">${d.grade || 'N/A'}</span>
-                        <span>${d.score ? d.score + '/10' : ''}</span>
-                        ${d.scores && (d.scores.usefulness || d.scores.simplicity) ? `<button onclick="toggleScoreBreakdown()" style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;font-size:12px;font-weight:500;border:1px solid var(--border-input);border-radius:6px;background:var(--bg-input);color:var(--text-muted);cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='var(--bg-hover)';this.style.borderColor='var(--text-muted)'" onmouseout="this.style.background='var(--bg-input)';this.style.borderColor='var(--border-input)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>Score Breakdown</button>` : ''}
-                    </div>
-                </div>
-                <div id="scoreBreakdownPanel" style="display:none">
-                    <div class="panel-section" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;margin:4px 0">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                            <div class="panel-label" style="margin:0">Score Breakdown <span style="font-size:11px;color:var(--text-muted)">(out of 10)</span></div>
-                            <button onclick="toggleScoreBreakdown()" style="width:24px;height:24px;padding:2px;border:none;border-radius:4px;background:transparent;color:var(--text-muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">✕</button>
-                        </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-                            ${d.scores.usefulness ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Usefulness <span style="color:var(--text-muted)">(25%)</span></span><strong>${d.scores.usefulness}</strong></div>` : ''}
-                            ${d.scores.simplicity ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Simplicity <span style="color:var(--text-muted)">(15%)</span></span><strong>${d.scores.simplicity}</strong></div>` : ''}
-                            ${d.scores.latency ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Latency <span style="color:var(--text-muted)">(15%)</span></span><strong>${d.scores.latency}</strong></div>` : ''}
-                            ${d.scores.cost ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Cost Efficiency <span style="color:var(--text-muted)">(15%)</span></span><strong>${d.scores.cost}</strong></div>` : ''}
-                            ${d.scores.scalability ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Scalability <span style="color:var(--text-muted)">(10%)</span></span><strong>${d.scores.scalability}</strong></div>` : ''}
-                            ${d.scores.production ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Production <span style="color:var(--text-muted)">(10%)</span></span><strong>${d.scores.production}</strong></div>` : ''}
-                            ${d.scores.novelty ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Novelty <span style="color:var(--text-muted)">(5%)</span></span><strong>${d.scores.novelty}</strong></div>` : ''}
-                            ${d.scores.maintenance ? `<div style="display:flex;justify-content:space-between;padding:5px 10px;background:var(--bg-hover);border-radius:6px;font-size:13px"><span style="color:var(--text-secondary)">Maintenance <span style="color:var(--text-muted)">(5%)</span></span><strong>${d.scores.maintenance}</strong></div>` : ''}
-                        </div>
-                        ${d.recommended_for ? `<div style="margin-top:10px;padding:8px 12px;background:var(--tag-stage-bg);color:var(--tag-stage-text);border-radius:6px;font-size:13px"><strong>Recommended:</strong> ${d.recommended_for}</div>` : ''}
-                        ${d.key_limitation ? `<div style="margin-top:6px;padding:8px 12px;background:var(--tag-problem-bg);color:var(--tag-problem-text);border-radius:6px;font-size:13px"><strong>Limitation:</strong> ${d.key_limitation}</div>` : ''}
-                        ${d.implementation_notes ? `<div style="margin-top:6px;padding:8px 12px;background:var(--bg-hover);border-radius:6px;font-size:13px;color:var(--text-secondary)"><strong>Notes:</strong> ${d.implementation_notes}</div>` : ''}
-                    </div>
-                </div>
-                <div class="panel-section">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                         <div class="panel-label">Description</div>
                         <button id="copyBtn" onclick="copyDescription(this)" style="width:32px;height:32px;padding:6px;border:1px solid var(--border-input);border-radius:6px;background:var(--bg-input);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.background='var(--bg-hover)';this.style.borderColor='var(--text-muted)'" onmouseout="if(!this.dataset.copied){this.style.background='var(--bg-input)';this.style.borderColor='var(--border-input)'}">
@@ -683,6 +672,27 @@
                 <div class="panel-section">
                     <div class="panel-label">References</div>
                     <div class="panel-desc" style="font-size:13px">${renderReferences(refs)}</div>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-label">Scores <span style="font-size:11px;color:var(--text-muted)">(1-5)</span></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:var(--bg-hover);border-radius:8px">
+                            <span style="font-size:13px;color:var(--text-secondary)">Performance Boost</span>
+                            <strong style="font-size:15px">${d.performance_boost || '-'}</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:var(--bg-hover);border-radius:8px">
+                            <span style="font-size:13px;color:var(--text-secondary)">Integration Simplicity</span>
+                            <strong style="font-size:15px">${d.integration_simplicity || '-'}</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:var(--bg-hover);border-radius:8px">
+                            <span style="font-size:13px;color:var(--text-secondary)">Latency</span>
+                            <strong style="font-size:15px">${d.latency || '-'}</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:var(--bg-hover);border-radius:8px">
+                            <span style="font-size:13px;color:var(--text-secondary)">Cost</span>
+                            <strong style="font-size:15px">${d.cost || '-'}</strong>
+                        </div>
+                    </div>
                 </div>
                 <div class="panel-section">
                     
@@ -737,7 +747,10 @@
         document.getElementById('clusterFilter').addEventListener('change', render);
         document.getElementById('stageFilter').addEventListener('change', render);
         document.getElementById('problemFilter').addEventListener('change', render);
-        document.getElementById('gradeFilter').addEventListener('change', render);
+        document.getElementById('perfFilter').addEventListener('change', render);
+        document.getElementById('simpFilter').addEventListener('change', render);
+        document.getElementById('latFilter').addEventListener('change', render);
+        document.getElementById('costFilter').addEventListener('change', render);
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -1039,7 +1052,10 @@
             document.getElementById('clusterFilter').value = clusterId;
             document.getElementById('stageFilter').value = '';
             document.getElementById('problemFilter').value = '';
-            document.getElementById('gradeFilter').value = '';
+            document.getElementById('perfFilter').value = '';
+            document.getElementById('simpFilter').value = '';
+            document.getElementById('latFilter').value = '';
+            document.getElementById('costFilter').value = '';
             render();
             
             expandedClusters.add(clusterId);
@@ -1061,7 +1077,10 @@
             document.getElementById('clusterFilter').value = '';
             document.getElementById('stageFilter').value = stageId;
             document.getElementById('problemFilter').value = '';
-            document.getElementById('gradeFilter').value = '';
+            document.getElementById('perfFilter').value = '';
+            document.getElementById('simpFilter').value = '';
+            document.getElementById('latFilter').value = '';
+            document.getElementById('costFilter').value = '';
             render();
             
             // Explicitly close sidebar instead of toggle to prevent double-toggle issue
@@ -1075,7 +1094,10 @@
             document.getElementById('clusterFilter').value = '';
             document.getElementById('stageFilter').value = '';
             document.getElementById('problemFilter').value = '';
-            document.getElementById('gradeFilter').value = '';
+            document.getElementById('perfFilter').value = '';
+            document.getElementById('simpFilter').value = '';
+            document.getElementById('latFilter').value = '';
+            document.getElementById('costFilter').value = '';
             document.getElementById('searchBox').value = '';
             
             CLUSTERS.forEach(cl => expandedClusters.add(cl.id));

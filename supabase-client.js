@@ -92,13 +92,7 @@ export async function getTechniques() {
         .order('name');
     
     if (err1) throw err1;
-    
-    // Debug: check if grade column is returned
-    if (techniques.length > 0) {
-        console.log('Raw technique keys:', Object.keys(techniques[0]));
-        console.log('Raw grade value:', techniques[0].grade, 'type:', typeof techniques[0].grade);
-    }
-    
+
     // Second query: relationships separately
     const { data: relationships, error: err2 } = await supabase
         .from('technique_relationships')
@@ -147,6 +141,7 @@ export async function getDataInLegacyFormat() {
     }));
     
     // Build DATA array
+    const to5 = v => v ? Math.round(v / 2) : null; // convert 1-10 to 1-5
     const DATA = techniques.map(t => ({
         t: t.name,
         c: t.cluster_id,
@@ -156,15 +151,15 @@ export async function getDataInLegacyFormat() {
         sim: t.technique_relationships.map(r => r.related_technique?.name).filter(Boolean),
         grade: t.grade,
         score: t.overall_score,
+        performance_boost: to5(t.score_usefulness),
+        integration_simplicity: to5(t.score_simplicity),
+        latency: to5(t.score_latency),
+        cost: to5(t.score_cost),
         scores: {
             usefulness: t.score_usefulness,
             simplicity: t.score_simplicity,
             latency: t.score_latency,
             cost: t.score_cost,
-            scalability: t.score_scalability,
-            production: t.score_production,
-            novelty: t.score_novelty,
-            maintenance: t.score_maintenance
         },
         recommended_for: t.recommended_for,
         key_limitation: t.key_limitation,
@@ -247,7 +242,7 @@ export async function searchTechniques(query) {
 }
 
 /**
- * Clear cache (useful for refreshing data)
+ * Clear cache 
  */
 export function clearCache() {
     clustersCache = null;
