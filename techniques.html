@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced RAG Techniques</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
         :root{--bg-body:#f8fafc;--bg-card:#fff;--bg-panel:#fff;--bg-toolbar:#fff;--bg-hover:#f1f5f9;--bg-input:#fff;--bg-sidebar:#fff;--text-primary:#0f172a;--text-secondary:#1e293b;--text-muted:#64748b;--text-label:#475569;--border-color:#e2e8f0;--border-input:#cbd5e1;--shadow-sm:0 1px 3px rgba(0,0,0,0.1);--shadow-md:0 4px 12px rgba(59,130,246,0.15);--shadow-lg:-4px 0 20px rgba(0,0,0,0.1);--accent-blue:#3b82f6;--accent-light:#eff6ff;--tag-problem-bg:#dbeafe;--tag-problem-text:#1e40af;--tag-stage-bg:#dcfce7;--tag-stage-text:#166534;--tag-mech-bg:#f3e8ff;--tag-mech-text:#7c3aed;--tag-grade-bg:#fef3c7;--tag-grade-text:#92400e;--chip-bg:#f8fafc;--chip-hover-bg:#eff6ff;--overlay-bg:rgba(0,0,0,0.3)}
@@ -40,11 +41,25 @@
         .cluster-toggle.collapsed{transform:rotate(-90deg)}
         .cluster-desc{font-size:13px;color:var(--text-muted);padding:0 20px 16px 44px;background:var(--bg-body);border-bottom:1px solid var(--border-color)}
         .cluster-desc.collapsed{display:none}
-        .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:20px}
+        .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;padding:20px}
         .cards-grid.collapsed{display:none}
-        .card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s}
+        .card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:24px;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;gap:12px}
         .card:hover{border-color:var(--accent-blue);box-shadow:var(--shadow-md);transform:translateY(-2px)}
-        .card-name{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px;line-height:1.4}
+        .card-header{display:flex;align-items:flex-start;gap:10px}
+        .card-cluster-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px}
+        .card-name{font-size:15px;font-weight:600;color:var(--text-primary);line-height:1.35;flex:1}
+        .card-desc{font-size:13px;color:var(--text-muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+        .card-scores{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+        .card-score{display:flex;align-items:center;gap:6px;font-size:12px}
+        .card-score-label{color:var(--text-muted);min-width:52px}
+        .card-score-bar{flex:1;height:5px;background:var(--bg-hover);border-radius:3px;overflow:hidden;min-width:40px}
+        .card-score-fill{height:100%;border-radius:3px;transition:width 0.3s}
+        .card-score-value{font-weight:600;color:var(--text-secondary);min-width:24px;text-align:right;font-size:11px}
+        .card-meta{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+        .meta-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary)}
+        .meta-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+        .meta-label{color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.03em;min-width:70px}
+        .meta-value{font-weight:500;color:var(--text-secondary)}
         .tag-row{display:flex;flex-wrap:wrap;gap:4px}
         .tag{font-size:11px;padding:3px 8px;border-radius:6px;line-height:1.3;font-weight:500}
         .tag-problem{background:var(--tag-problem-bg);color:var(--tag-problem-text)}
@@ -82,7 +97,7 @@
         .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--overlay-bg);z-index:99;opacity:0;visibility:hidden;transition:all 0.3s}
         .overlay.open{opacity:1;visibility:visible}
         .no-results{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:16px}
-        @media(max-width:768px){.container{padding:12px}.toolbar{flex-direction:column;align-items:stretch}input[type=search],select{width:100%}.stats{margin-left:0;text-align:center}.cards-grid{grid-template-columns:1fr;padding:12px}.detail-panel{width:100%}}
+        @media(max-width:768px){.container{padding:12px}.toolbar{flex-direction:column;align-items:stretch}input[type=search],select{width:100%}.stats{margin-left:0;text-align:center}.cards-grid{grid-template-columns:1fr;padding:12px;gap:12px}.detail-panel{width:100%}}
         
         /* Community Engagement Styles */
         .suggest-btn{margin-left:auto;height:40px;padding:0 16px;font-size:13px;font-weight:500;color:var(--accent-blue);background:var(--bg-card);border:1px solid var(--accent-blue);border-radius:8px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px}
@@ -239,6 +254,29 @@
         .help-title{color:var(--text-primary);border-bottom-color:var(--border-color)}
         .help-item-title{color:var(--text-secondary)}
         .help-item-desc{color:var(--text-muted)}
+        
+        /* Radar Chart Styles */
+        .radar-chart-container{margin-top:16px;padding:16px;background:var(--bg-hover);border-radius:12px;display:flex;flex-direction:column;align-items:center}
+        .radar-chart-container canvas{max-width:280px;max-height:280px}
+        
+        /* Multi-select Filter Styles */
+        .multi-select{position:relative;min-width:180px}
+        .multi-select-trigger{display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 12px;font-size:14px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-input);color:var(--text-secondary);cursor:pointer;user-select:none;transition:all 0.2s}
+        .multi-select-trigger:hover{border-color:var(--text-muted)}
+        .multi-select-trigger.open{border-color:var(--accent-blue);box-shadow:0 0 0 3px var(--accent-light)}
+        .multi-select-trigger .count{font-size:11px;color:var(--accent-blue);background:var(--accent-light);padding:2px 8px;border-radius:10px;margin-left:8px}
+        .multi-select-dropdown{position:absolute;top:100%;left:0;right:0;margin-top:4px;background:var(--bg-input);border:1px solid var(--border-input);border-radius:8px;max-height:240px;overflow-y:auto;z-index:1000;display:none;box-shadow:var(--shadow-md)}
+        .multi-select-dropdown.open{display:block}
+        .multi-select-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;transition:background 0.15s;font-size:13px;color:var(--text-secondary)}
+        .multi-select-item:hover{background:var(--bg-hover)}
+        .multi-select-item input[type="checkbox"]{width:14px;height:14px;cursor:pointer;accent-color:var(--accent-blue)}
+        .multi-select-actions{display:flex;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--border-input);background:var(--bg-hover)}
+        .multi-select-btn{font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:all 0.2s}
+        .multi-select-btn:hover{color:var(--accent-blue);background:var(--accent-light)}
+        .multi-select-btn.primary{background:var(--accent-blue);color:#fff}
+        .multi-select-btn.primary:hover{filter:brightness(0.9)}
+        .multi-select-arrow{font-size:12px;color:var(--text-muted);transition:transform 0.2s}
+        .multi-select-arrow.open{transform:rotate(180deg)}
     </style>
 </head>
 <body>
@@ -257,72 +295,152 @@
                 <span class="stats" id="statsLabel">Techniques</span>
             </div>
             <div class="toolbar-row">
-                <select id="clusterFilter">
-                    <option value="">Categories</option>
-                    <option value="QT">Query Transformation</option>
-                    <option value="RC">Routing & Classification</option>
-                    <option value="AG">Agentic Systems</option>
-                    <option value="HR">Hybrid & Ensemble Retrieval</option>
-                    <option value="CK">Chunking Strategies</option>
-                    <option value="HI">Hierarchical Indexing</option>
-                    <option value="MV">Multi-Vector Embeddings</option>
-                    <option value="MM">Multimodal Retrieval</option>
-                    <option value="RR">Reranking & Filtering</option>
-                    <option value="CC">Context Compression</option>
-                    <option value="VC">Verification & Correction</option>
-                    <option value="KG">Knowledge Graph</option>
-                    <option value="TR">Training & Alignment</option>
-                    <option value="MS">Memory & State</option>
-                </select>
-                <select id="stageFilter">
-                    <option value="">Pipeline Stages</option>
-                    <option value="pre-retrieval">Pre-Retrieval</option>
-                    <option value="retrieval core">Retrieval Core</option>
-                    <option value="post-retrieval">Post-Retrieval</option>
-                    <option value="generation layer">Generation Layer</option>
-                    <option value="cross-session">Cross-Session</option>
-                </select>
-                <select id="problemFilter">
-                    <option value="">Problem Addressed</option>
-                    <option value="Retrieval Quality">Retrieval Quality</option>
-                    <option value="Query Complexity">Query Complexity</option>
-                    <option value="Context Loss">Context Loss</option>
-                    <option value="Retrieval Noise">Retrieval Noise</option>
-                    <option value="Generation Faithfulness">Generation Faithfulness</option>
-                    <option value="Cross-Session">Cross-Session</option>
-                </select>
-                <select id="perfFilter">
-                    <option value="">Performance Boost</option>
-                    <option value="5">5 - Exceptional</option>
-                    <option value="4">4 - High</option>
-                    <option value="3">3 - Moderate</option>
-                    <option value="2">2 - Low</option>
-                    <option value="1">1 - Minimal</option>
-                </select>
-                <select id="simpFilter">
-                    <option value="">Integration Simplicity</option>
-                    <option value="5">5 - Trivial</option>
-                    <option value="4">4 - Easy</option>
-                    <option value="3">3 - Moderate</option>
-                    <option value="2">2 - Complex</option>
-                    <option value="1">1 - Very Complex</option>
-                </select>
-                <select id="latFilter">
-                    <option value="">Latency</option>
-                    <option value="5">5 - Negligible</option>
-                    <option value="4">4 - Low</option>
-                    <option value="3">3 - Moderate</option>
-                    <option value="2">2 - High</option>
-                    <option value="1">1 - Very High</option>
-                </select>
-                <select id="costFilter">
-                    <option value="">Cost</option>
-                    <option value="5">5 - Very Low</option>
-                    <option value="4">4 - Low</option>
-                    <option value="3">3 - Moderate</option>
-                    <option value="2">2 - High</option>
-                    <option value="1">1 - Very High</option>
-                </select>
+                <div class="multi-select" id="clusterFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('clusterFilter')">
+                        <span>Categories</span>
+                        <span class="count" id="clusterCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="clusterArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="clusterFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="QT" onchange="updateMultiSelect('clusterFilter')"> Query Transformation</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="RC" onchange="updateMultiSelect('clusterFilter')"> Routing & Classification</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="AG" onchange="updateMultiSelect('clusterFilter')"> Agentic Systems</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="HR" onchange="updateMultiSelect('clusterFilter')"> Hybrid & Ensemble Retrieval</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="CK" onchange="updateMultiSelect('clusterFilter')"> Chunking Strategies</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="HI" onchange="updateMultiSelect('clusterFilter')"> Hierarchical Indexing</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="MV" onchange="updateMultiSelect('clusterFilter')"> Multi-Vector Embeddings</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="MM" onchange="updateMultiSelect('clusterFilter')"> Multimodal Retrieval</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="RR" onchange="updateMultiSelect('clusterFilter')"> Reranking & Filtering</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="CC" onchange="updateMultiSelect('clusterFilter')"> Context Compression</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="VC" onchange="updateMultiSelect('clusterFilter')"> Verification & Correction</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="KG" onchange="updateMultiSelect('clusterFilter')"> Knowledge Graph</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="TR" onchange="updateMultiSelect('clusterFilter')"> Training & Alignment</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="MS" onchange="updateMultiSelect('clusterFilter')"> Memory & State</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('clusterFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="multi-select" id="stageFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('stageFilter')">
+                        <span>Pipeline Stages</span>
+                        <span class="count" id="stageCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="stageArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="stageFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="pre-retrieval" onchange="updateMultiSelect('stageFilter')"> Pre-Retrieval</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="retrieval core" onchange="updateMultiSelect('stageFilter')"> Retrieval Core</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="post-retrieval" onchange="updateMultiSelect('stageFilter')"> Post-Retrieval</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="generation layer" onchange="updateMultiSelect('stageFilter')"> Generation Layer</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="cross-session" onchange="updateMultiSelect('stageFilter')"> Cross-Session</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('stageFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="multi-select" id="problemFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('problemFilter')">
+                        <span>Problem Addressed</span>
+                        <span class="count" id="problemCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="problemArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="problemFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="Retrieval Quality" onchange="updateMultiSelect('problemFilter')"> Retrieval Quality</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="Query Complexity" onchange="updateMultiSelect('problemFilter')"> Query Complexity</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="Context Loss" onchange="updateMultiSelect('problemFilter')"> Context Loss</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="Retrieval Noise" onchange="updateMultiSelect('problemFilter')"> Retrieval Noise</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="Generation Faithfulness" onchange="updateMultiSelect('problemFilter')"> Generation Faithfulness</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="Cross-Session" onchange="updateMultiSelect('problemFilter')"> Cross-Session</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('problemFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="multi-select" id="perfFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('perfFilter')">
+                        <span>Performance Boost</span>
+                        <span class="count" id="perfCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="perfArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="perfFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="5" onchange="updateMultiSelect('perfFilter')"> 5 - Transformative</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="4" onchange="updateMultiSelect('perfFilter')"> 4 - Significant</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="3" onchange="updateMultiSelect('perfFilter')"> 3 - Moderate</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2" onchange="updateMultiSelect('perfFilter')"> 2 - Marginal</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="1" onchange="updateMultiSelect('perfFilter')"> 1 - Negligible</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('perfFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="multi-select" id="simpFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('simpFilter')">
+                        <span>Integration Simplicity</span>
+                        <span class="count" id="simpCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="simpArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="simpFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="5" onchange="updateMultiSelect('simpFilter')"> 5 - Trivial</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="4" onchange="updateMultiSelect('simpFilter')"> 4 - Easy</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="3" onchange="updateMultiSelect('simpFilter')"> 3 - Moderate</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2" onchange="updateMultiSelect('simpFilter')"> 2 - Hard</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="1" onchange="updateMultiSelect('simpFilter')"> 1 - Very Hard</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('simpFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="multi-select" id="latFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('latFilter')">
+                        <span>Latency</span>
+                        <span class="count" id="latCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="latArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="latFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="5" onchange="updateMultiSelect('latFilter')"> 5 - Zero overhead</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="4" onchange="updateMultiSelect('latFilter')"> 4 - Minimal</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="3" onchange="updateMultiSelect('latFilter')"> 3 - Acceptable</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2" onchange="updateMultiSelect('latFilter')"> 2 - Significant</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="1" onchange="updateMultiSelect('latFilter')"> 1 - Severe</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('latFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="multi-select" id="costFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('costFilter')">
+                        <span>Cost</span>
+                        <span class="count" id="costCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="costArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="costFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="5" onchange="updateMultiSelect('costFilter')"> 5 - Very Low</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="4" onchange="updateMultiSelect('costFilter')"> 4 - Low</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="3" onchange="updateMultiSelect('costFilter')"> 3 - Moderate</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2" onchange="updateMultiSelect('costFilter')"> 2 - High</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="1" onchange="updateMultiSelect('costFilter')"> 1 - Very High</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('costFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="multi-select" id="popFilterContainer">
+                    <div class="multi-select-trigger" onclick="toggleMultiSelect('popFilter')">
+                        <span>Popularity</span>
+                        <span class="count" id="popCount" style="display:none">0</span>
+                        <span class="multi-select-arrow" id="popArrow">▼</span>
+                    </div>
+                    <div class="multi-select-dropdown" id="popFilterDropdown">
+                        <div class="multi-select-item"><label><input type="checkbox" value="5" onchange="updateMultiSelect('popFilter')"> 5 - Very Common</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="4" onchange="updateMultiSelect('popFilter')"> 4 - Common</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="3" onchange="updateMultiSelect('popFilter')"> 3 - Known</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="2" onchange="updateMultiSelect('popFilter')"> 2 - Niche</label></div>
+                        <div class="multi-select-item"><label><input type="checkbox" value="1" onchange="updateMultiSelect('popFilter')"> 1 - Rare</label></div>
+                        <div class="multi-select-actions">
+                            <button class="multi-select-btn" onclick="event.stopPropagation(); clearMultiSelect('popFilter')">Clear</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="root"></div>
@@ -461,19 +579,63 @@
                 const simpParam = urlParams.get('simp');
                 const latParam = urlParams.get('lat');
                 const costParam = urlParams.get('cost');
+                // Handle URL params for multi-select filters
                 if (catParam) {
-                    document.getElementById('clusterFilter').value = catParam;
+                    const cats = catParam.split(',');
+                    cats.forEach(val => {
+                        const cb = document.querySelector('#clusterFilterDropdown input[value="' + val + '"]');
+                        if (cb) cb.checked = true;
+                    });
+                    updateMultiSelect('clusterFilter');
                 }
                 if (stageParam) {
-                    document.getElementById('stageFilter').value = stageParam;
+                    const stages = stageParam.split(',');
+                    stages.forEach(val => {
+                        const cb = document.querySelector('#stageFilterDropdown input[value="' + val + '"]');
+                        if (cb) cb.checked = true;
+                    });
+                    updateMultiSelect('stageFilter');
                 }
                 if (problemParam) {
-                    document.getElementById('problemFilter').value = problemParam;
+                    const problems = problemParam.split(',');
+                    problems.forEach(val => {
+                        const cb = document.querySelector('#problemFilterDropdown input[value="' + val + '"]');
+                        if (cb) cb.checked = true;
+                    });
+                    updateMultiSelect('problemFilter');
                 }
-                if (perfParam) document.getElementById('perfFilter').value = perfParam;
-                if (simpParam) document.getElementById('simpFilter').value = simpParam;
-                if (latParam) document.getElementById('latFilter').value = latParam;
-                if (costParam) document.getElementById('costFilter').value = costParam;
+                if (perfParam) {
+                    const perfs = perfParam.split(',');
+                    perfs.forEach(val => {
+                        const cb = document.querySelector('#perfFilterDropdown input[value="' + val + '"]');
+                        if (cb) cb.checked = true;
+                    });
+                    updateMultiSelect('perfFilter');
+                }
+                if (simpParam) {
+                    const simps = simpParam.split(',');
+                    simps.forEach(val => {
+                        const cb = document.querySelector('#simpFilterDropdown input[value="' + val + '"]');
+                        if (cb) cb.checked = true;
+                    });
+                    updateMultiSelect('simpFilter');
+                }
+                if (latParam) {
+                    const lats = latParam.split(',');
+                    lats.forEach(val => {
+                        const cb = document.querySelector('#latFilterDropdown input[value="' + val + '"]');
+                        if (cb) cb.checked = true;
+                    });
+                    updateMultiSelect('latFilter');
+                }
+                if (costParam) {
+                    const costs = costParam.split(',');
+                    costs.forEach(val => {
+                        const cb = document.querySelector('#costFilterDropdown input[value="' + val + '"]');
+                        if (cb) cb.checked = true;
+                    });
+                    updateMultiSelect('costFilter');
+                }
                 
                 // Attach event listeners after data is loaded
                 attachEventListeners();
@@ -495,13 +657,16 @@
         
         function attachEventListeners() {
             document.getElementById('searchBox').addEventListener('input', render);
-            document.getElementById('clusterFilter').addEventListener('change', render);
-            document.getElementById('stageFilter').addEventListener('change', render);
-            document.getElementById('problemFilter').addEventListener('change', render);
-            document.getElementById('perfFilter').addEventListener('change', render);
-            document.getElementById('simpFilter').addEventListener('change', render);
-            document.getElementById('latFilter').addEventListener('change', render);
-            document.getElementById('costFilter').addEventListener('change', render);
+
+            // Close multi-select dropdowns when clicking outside
+            document.addEventListener('click', (e) => {
+                if (openMultiSelect && !e.target.closest('.multi-select')) {
+                    openMultiSelect.classList.remove('open');
+                    document.querySelector('.multi-select-trigger.open')?.classList.remove('open');
+                    document.querySelector('.multi-select-arrow.open')?.classList.remove('open');
+                    openMultiSelect = null;
+                }
+            });
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
@@ -517,30 +682,84 @@
 
         let selected = null;
         let expandedClusters = new Set();
+        let openMultiSelect = null;
 
         function getCluster(id) { return CLUSTERS.find(c => c.id === id); }
 
+        // Multi-select filter functions
+        function toggleMultiSelect(filterName) {
+            const dropdown = document.getElementById(filterName + 'Dropdown');
+            const trigger = document.querySelector('#' + filterName + 'Container .multi-select-trigger');
+            const arrow = document.getElementById(filterName.replace('Filter', 'Arrow'));
+            
+            // Close other open dropdowns
+            if (openMultiSelect && openMultiSelect !== dropdown) {
+                openMultiSelect.classList.remove('open');
+                document.querySelector('.multi-select-trigger.open')?.classList.remove('open');
+                document.querySelector('.multi-select-arrow.open')?.classList.remove('open');
+            }
+            
+            dropdown.classList.toggle('open');
+            trigger.classList.toggle('open');
+            arrow.classList.toggle('open');
+            
+            openMultiSelect = dropdown.classList.contains('open') ? dropdown : null;
+        }
+
+        function updateMultiSelect(filterName) {
+            const dropdown = document.getElementById(filterName + 'Dropdown');
+            const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]:checked');
+            const countEl = document.getElementById(filterName.replace('Filter', 'Count'));
+            const trigger = document.querySelector('#' + filterName + 'Container .multi-select-trigger span:first-child');
+            
+            if (checkboxes.length > 0) {
+                countEl.textContent = checkboxes.length;
+                countEl.style.display = 'inline';
+            } else {
+                countEl.style.display = 'none';
+            }
+            
+            render();
+        }
+
+        function clearMultiSelect(filterName) {
+            const dropdown = document.getElementById(filterName + 'Dropdown');
+            dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            updateMultiSelect(filterName);
+        }
+
+        function getMultiSelectValues(filterName) {
+            const dropdown = document.getElementById(filterName + 'Dropdown');
+            const values = [];
+            dropdown.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+                values.push(cb.value);
+            });
+            return values;
+        }
+
         function render() {
             const q = document.getElementById('searchBox').value.toLowerCase();
-            const clusterF = document.getElementById('clusterFilter').value;
-            const stageF = document.getElementById('stageFilter').value;
-            const problemF = document.getElementById('problemFilter').value;
-            const perfF = document.getElementById('perfFilter').value;
-            const simpF = document.getElementById('simpFilter').value;
-            const latF = document.getElementById('latFilter').value;
-            const costF = document.getElementById('costFilter').value;
+            const clusterValues = getMultiSelectValues('clusterFilter');
+            const stageValues = getMultiSelectValues('stageFilter');
+            const problemValues = getMultiSelectValues('problemFilter');
+            const perfValues = getMultiSelectValues('perfFilter');
+            const simpValues = getMultiSelectValues('simpFilter');
+            const latValues = getMultiSelectValues('latFilter');
+            const costValues = getMultiSelectValues('costFilter');
+            const popValues = getMultiSelectValues('popFilter');
 
             const filtered = DATA.filter(d => {
                 const cluster = getCluster(d.c);
                 const matchQ = !q || d.t.toLowerCase().includes(q) || d.p.includes(q) || d.s.includes(q) || d.m.includes(q) || (cluster && cluster.name.toLowerCase().includes(q));
-                const matchC = !clusterF || d.c === clusterF;
-                const matchS = !stageF || d.s?.toLowerCase() === stageF.toLowerCase();
-                const matchP = !problemF || d.p?.toLowerCase() === problemF.toLowerCase();
-                const matchPerf = !perfF || d.performance_boost == perfF;
-                const matchSimp = !simpF || d.integration_simplicity == simpF;
-                const matchLat = !latF || d.latency == latF;
-                const matchCost = !costF || d.cost == costF;
-                return matchQ && matchC && matchS && matchP && matchPerf && matchSimp && matchLat && matchCost;
+                const matchC = clusterValues.length === 0 || clusterValues.includes(d.c);
+                const matchS = stageValues.length === 0 || stageValues.some(s => d.s?.toLowerCase() === s.toLowerCase());
+                const matchP = problemValues.length === 0 || problemValues.some(p => d.p?.toLowerCase() === p.toLowerCase());
+                const matchPerf = perfValues.length === 0 || perfValues.includes(String(d.performance_boost));
+                const matchSimp = simpValues.length === 0 || simpValues.includes(String(d.integration_simplicity));
+                const matchLat = latValues.length === 0 || latValues.includes(String(d.latency));
+                const matchCost = costValues.length === 0 || costValues.includes(String(d.cost));
+                const matchPop = popValues.length === 0 || popValues.includes(String(d.popularity));
+                return matchQ && matchC && matchS && matchP && matchPerf && matchSimp && matchLat && matchCost && matchPop;
             });
 
             document.getElementById('statsLabel').textContent = filtered.length + ' of ' + DATA.length + ' techniques';
@@ -555,7 +774,8 @@
                 const isExpanded = expandedClusters.has(cl.id);
                 const hasItems = items && items.length > 0;
                 
-                if (!hasItems && (clusterF || q || stageF || problemF || perfF || simpF || latF || costF)) return;
+                const hasActiveFilters = clusterValues.length > 0 || stageValues.length > 0 || problemValues.length > 0 || perfValues.length > 0 || simpValues.length > 0 || latValues.length > 0 || costValues.length > 0 || popValues.length > 0 || q;
+                if (!hasItems && hasActiveFilters) return;
                 
                 html += `<div class="cluster-section">
                     <div class="cluster-header ${!isExpanded ? 'collapsed' : ''}" onclick="toggleCluster('${cl.id}')">
@@ -569,12 +789,34 @@
                 
                 if (items) {
                     items.forEach(d => {
+                        const cardCl = getCluster(d.c);
+                        const descText = DESCRIPTIONS[d.t] ? DESCRIPTIONS[d.t].replace(/<[^>]*>/g, '').substring(0, 110) + (DESCRIPTIONS[d.t].replace(/<[^>]*>/g, '').length > 110 ? '...' : '') : '';
+                        const hasScores = d.performance_boost || d.integration_simplicity || d.latency || d.cost;
+                        
+                        const scoreBar = (val, max, color) => {
+                            if (!val) return '<div class="card-score-bar"><div class="card-score-fill" style="width:0%;background:transparent"></div></div>';
+                            const pct = (val / max) * 100;
+                            return `<div class="card-score-bar"><div class="card-score-fill" style="width:${pct}%;background:${color}"></div></div>`;
+                        };
+                        
+                        const scoreValue = (val) => val ? `<span class="card-score-value">${val}/5</span>` : '<span class="card-score-value">-</span>';
+                        
                         html += `<div class="card" onclick="openPanel('${d.t.replace(/'/g, "\\'")}')">
-                            <div class="card-name">${d.t}</div>
-                            <div class="tag-row">
-                                <span class="tag tag-problem">${d.p}</span>
-                                <span class="tag tag-stage">${d.s}</span>
-                                <span class="tag tag-mech">${d.m}</span>
+                            <div class="card-header">
+                                <span class="card-cluster-dot" style="background:${cardCl ? cardCl.color : '#999'}"></span>
+                                <div class="card-name">${d.t}</div>
+                            </div>
+                            ${descText ? `<div class="card-desc">${descText}</div>` : ''}
+                            ${hasScores ? `<div class="card-scores">
+                                <div class="card-score"><span class="card-score-label">Perf</span>${scoreBar(d.performance_boost, 5, '#3b82f6')}${scoreValue(d.performance_boost)}</div>
+                                <div class="card-score"><span class="card-score-label">Simple</span>${scoreBar(d.integration_simplicity, 5, '#22c55e')}${scoreValue(d.integration_simplicity)}</div>
+                                <div class="card-score"><span class="card-score-label">Latency</span>${scoreBar(d.latency, 5, '#f59e0b')}${scoreValue(d.latency)}</div>
+                                <div class="card-score"><span class="card-score-label">Cost</span>${scoreBar(d.cost, 5, '#a855f7')}${scoreValue(d.cost)}</div>
+                            </div>` : ''}
+                            <div class="card-meta">
+                                <div class="meta-row"><span class="meta-icon">🎯</span><span class="meta-label">Problem</span><span class="meta-value">${d.p}</span></div>
+                                <div class="meta-row"><span class="meta-icon">📍</span><span class="meta-label">Stage</span><span class="meta-value">${d.s}</span></div>
+                                <div class="meta-row"><span class="meta-icon">⚙️</span><span class="meta-label">Mechanism</span><span class="meta-value">${d.m}</span></div>
                             </div>
                         </div>`;
                     });
@@ -692,6 +934,13 @@
                             <span style="font-size:13px;color:var(--text-secondary)">Cost</span>
                             <strong style="font-size:15px">${d.cost || '-'}</strong>
                         </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:var(--bg-hover);border-radius:8px">
+                            <span style="font-size:13px;color:var(--text-secondary)">Popularity</span>
+                            <strong style="font-size:15px">${d.popularity || '-'}</strong>
+                        </div>
+                    </div>
+                    <div class="radar-chart-container">
+                        <canvas id="scoreRadarChart"></canvas>
                     </div>
                 </div>
                 <div class="panel-section">
@@ -704,6 +953,9 @@
             `;
             document.getElementById('panel').classList.add('open');
             document.getElementById('overlay').classList.add('open');
+            
+            // Render radar chart for scores
+            setTimeout(() => renderRadarChart(d), 0);
             
             // Auto-open illustration panel if available
             if (TECHNIQUE_IMAGES[d.t]) {
@@ -719,6 +971,117 @@
             document.getElementById('panel').classList.remove('open');
             document.getElementById('overlay').classList.remove('open');
             selected = null;
+        }
+
+        let radarChart = null;
+
+        function renderRadarChart(d) {
+            const canvas = document.getElementById('scoreRadarChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            
+            // Destroy existing chart if any
+            if (radarChart) {
+                canvas.parentElement.style.display = 'none';
+                return;
+            }
+            canvas.parentElement.style.display = 'flex';
+            
+            const labels = ['Performance', 'Simplicity', 'Latency', 'Cost', 'Popularity'];
+            const scores = [
+                d.performance_boost || 0,
+                d.integration_simplicity || 0,
+                d.latency || 0,
+                d.cost || 0,
+                d.popularity || 0
+            ];
+            const colors = isDark ? {
+                background: 'rgba(59, 130, 246, 0.2)',
+                border: '#3b82f6',
+                point: '#3b82f6',
+                grid: 'rgba(148, 163, 184, 0.2)',
+                angleLine: 'rgba(148, 163, 184, 0.3)',
+                tick: '#94a3b8'
+            } : {
+                background: 'rgba(59, 130, 246, 0.15)',
+                border: '#3b82f6',
+                point: '#2563eb',
+                grid: 'rgba(100, 116, 139, 0.2)',
+                angleLine: 'rgba(100, 116, 139, 0.3)',
+                tick: '#64748b'
+            };
+            
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Scores',
+                        data: scores,
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        borderWidth: 2,
+                        pointBackgroundColor: colors.point,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                display: false
+                            },
+                            grid: {
+                                color: colors.grid
+                            },
+                            angleLines: {
+                                color: colors.angleLine
+                            },
+                            pointLabels: {
+                                color: isDark ? '#e2e8f0' : '#334155',
+                                font: { size: 11, weight: '500' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isDark ? '#1e293b' : '#fff',
+                            titleColor: isDark ? '#f1f5f9' : '#0f172a',
+                            bodyColor: isDark ? '#e2e8f0' : '#334155',
+                            borderColor: isDark ? '#334155' : '#e2e8f0',
+                            borderWidth: 1,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label;
+                                    const value = context.raw;
+                                    const descriptions = {
+                                        'Performance': ['Minimal', 'Low', 'Moderate', 'High', 'Exceptional'],
+                                        'Simplicity': ['Very Complex', 'Complex', 'Moderate', 'Easy', 'Trivial'],
+                                        'Latency': ['Very High', 'High', 'Moderate', 'Low', 'Negligible'],
+                                        'Cost': ['Very High', 'High', 'Moderate', 'Low', 'Very Low'],
+                                        'Popularity': ['Rare', 'Niche', 'Known', 'Common', 'Very Common']
+                                    };
+                                    const desc = descriptions[label]?.[value - 1] || '';
+                                    return `${label}: ${value}/5${desc ? ' - ' + desc : ''}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function copyDescription(btn) {
@@ -744,13 +1107,6 @@
         }
 
         document.getElementById('searchBox').addEventListener('input', render);
-        document.getElementById('clusterFilter').addEventListener('change', render);
-        document.getElementById('stageFilter').addEventListener('change', render);
-        document.getElementById('problemFilter').addEventListener('change', render);
-        document.getElementById('perfFilter').addEventListener('change', render);
-        document.getElementById('simpFilter').addEventListener('change', render);
-        document.getElementById('latFilter').addEventListener('change', render);
-        document.getElementById('costFilter').addEventListener('change', render);
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -1049,13 +1405,17 @@
         }
         
         function openCategoryOnMain(clusterId) {
-            document.getElementById('clusterFilter').value = clusterId;
-            document.getElementById('stageFilter').value = '';
-            document.getElementById('problemFilter').value = '';
-            document.getElementById('perfFilter').value = '';
-            document.getElementById('simpFilter').value = '';
-            document.getElementById('latFilter').value = '';
-            document.getElementById('costFilter').value = '';
+            clearMultiSelect('clusterFilter');
+            clearMultiSelect('stageFilter');
+            clearMultiSelect('problemFilter');
+            clearMultiSelect('perfFilter');
+            clearMultiSelect('simpFilter');
+            clearMultiSelect('latFilter');
+            clearMultiSelect('costFilter');
+            clearMultiSelect('popFilter');
+            const cb = document.querySelector('#clusterFilterDropdown input[value="' + clusterId + '"]');
+            if (cb) cb.checked = true;
+            updateMultiSelect('clusterFilter');
             render();
             
             expandedClusters.add(clusterId);
@@ -1074,13 +1434,17 @@
         }
         
         function openStageOnMain(stageId) {
-            document.getElementById('clusterFilter').value = '';
-            document.getElementById('stageFilter').value = stageId;
-            document.getElementById('problemFilter').value = '';
-            document.getElementById('perfFilter').value = '';
-            document.getElementById('simpFilter').value = '';
-            document.getElementById('latFilter').value = '';
-            document.getElementById('costFilter').value = '';
+            clearMultiSelect('clusterFilter');
+            clearMultiSelect('stageFilter');
+            clearMultiSelect('problemFilter');
+            clearMultiSelect('perfFilter');
+            clearMultiSelect('simpFilter');
+            clearMultiSelect('latFilter');
+            clearMultiSelect('costFilter');
+            clearMultiSelect('popFilter');
+            const cb = document.querySelector('#stageFilterDropdown input[value="' + stageId + '"]');
+            if (cb) cb.checked = true;
+            updateMultiSelect('stageFilter');
             render();
             
             // Explicitly close sidebar instead of toggle to prevent double-toggle issue
@@ -1091,13 +1455,14 @@
         }
         
         function showAllCategories() {
-            document.getElementById('clusterFilter').value = '';
-            document.getElementById('stageFilter').value = '';
-            document.getElementById('problemFilter').value = '';
-            document.getElementById('perfFilter').value = '';
-            document.getElementById('simpFilter').value = '';
-            document.getElementById('latFilter').value = '';
-            document.getElementById('costFilter').value = '';
+            clearMultiSelect('clusterFilter');
+            clearMultiSelect('stageFilter');
+            clearMultiSelect('problemFilter');
+            clearMultiSelect('perfFilter');
+            clearMultiSelect('simpFilter');
+            clearMultiSelect('latFilter');
+            clearMultiSelect('costFilter');
+            clearMultiSelect('popFilter');
             document.getElementById('searchBox').value = '';
             
             CLUSTERS.forEach(cl => expandedClusters.add(cl.id));
@@ -1113,7 +1478,11 @@
 
         function navigateToTechnique(techName, clusterId) {
             // Filter to show only this cluster
-            document.getElementById('clusterFilter').value = clusterId;
+            clearMultiSelect('clusterFilter');
+            clearMultiSelect('popFilter');
+            const cb = document.querySelector('#clusterFilterDropdown input[value="' + clusterId + '"]');
+            if (cb) cb.checked = true;
+            updateMultiSelect('clusterFilter');
             render();
             
             // Expand the cluster section
@@ -1147,6 +1516,14 @@
             html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeUI(newTheme);
+            
+            // Re-render radar chart if panel is open
+            if (selected && radarChart) {
+                const d = DATA.find(x => x.t === selected);
+                if (d) {
+                    setTimeout(() => renderRadarChart(d), 0);
+                }
+            }
         }
 
         function updateThemeUI(theme) {
@@ -1309,31 +1686,19 @@
             if (clusterFilter) {
                 clusterFilter.addEventListener('change', () => {
                     renderToc();
-                    // Sync with main filter
-                    document.getElementById('clusterFilter').value = clusterFilter.value;
-                    render();
+                    // Note: ToC to main filter sync would need custom implementation
                 });
             }
 
             if (stageFilter) {
                 stageFilter.addEventListener('change', () => {
                     renderToc();
-                    // Sync with main filter
-                    document.getElementById('stageFilter').value = stageFilter.value;
-                    render();
+                    // Note: ToC to main filter sync would need custom implementation
                 });
             }
 
-            // Sync from main filters to ToC
-            document.getElementById('clusterFilter').addEventListener('change', (e) => {
-                if (clusterFilter) clusterFilter.value = e.target.value;
-                renderToc();
-            });
-
-            document.getElementById('stageFilter').addEventListener('change', (e) => {
-                if (stageFilter) stageFilter.value = e.target.value;
-                renderToc();
-            });
+            // Sync from main filters to ToC (multi-select filters trigger re-render via render())
+            // render() already calls renderSidebarToc() when filters change
         }
 
         // Scroll spy with Intersection Observer
@@ -1522,6 +1887,9 @@
         window.navigateToTechnique = navigateToTechnique;
         window.copyDescription = copyDescription;
         window.closeTocSidebar = closeTocSidebar;
+        window.toggleMultiSelect = toggleMultiSelect;
+        window.updateMultiSelect = updateMultiSelect;
+        window.clearMultiSelect = clearMultiSelect;
 
         // Call init on load (theme doesn't need data, rest happens after Supabase load)
         initTheme();

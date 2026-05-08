@@ -78,9 +78,8 @@ export async function getTechniques() {
         .from('techniques')
         .select(`
             id, name, cluster_id, stage_id, problem_id, mechanism_id, description,
-            grade, overall_score,
-            score_usefulness, score_simplicity, score_latency, score_cost,
-            score_scalability, score_production, score_novelty, score_maintenance,
+            performance_boost, integration_simplicity, latency, cost, popularity,
+            popularity_breakdown,
             recommended_for, key_limitation, implementation_notes,
             clusters!inner(*),
             stages!inner(*),
@@ -141,7 +140,6 @@ export async function getDataInLegacyFormat() {
     }));
     
     // Build DATA array
-    const to5 = v => v ? Math.round(v / 2) : null; // convert 1-10 to 1-5
     const DATA = techniques.map(t => ({
         t: t.name,
         c: t.cluster_id,
@@ -149,18 +147,12 @@ export async function getDataInLegacyFormat() {
         s: t.stages.name,
         m: t.mechanisms.name,
         sim: t.technique_relationships.map(r => r.related_technique?.name).filter(Boolean),
-        grade: t.grade,
-        score: t.overall_score,
-        performance_boost: to5(t.score_usefulness),
-        integration_simplicity: to5(t.score_simplicity),
-        latency: to5(t.score_latency),
-        cost: to5(t.score_cost),
-        scores: {
-            usefulness: t.score_usefulness,
-            simplicity: t.score_simplicity,
-            latency: t.score_latency,
-            cost: t.score_cost,
-        },
+        performance_boost: t.performance_boost,
+        integration_simplicity: t.integration_simplicity,
+        latency: t.latency,
+        cost: t.cost,
+        popularity: t.popularity,
+        popularity_breakdown: t.popularity_breakdown,
         recommended_for: t.recommended_for,
         key_limitation: t.key_limitation,
         implementation_notes: t.implementation_notes
