@@ -5,112 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced RAG Techniques — Methods & Patterns for Retrieval-Augmented Generation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
         :root{
-            --bg:#020617;--bg-card:#0f172a;--bg-card-hover:#1e293b;
+            --bg:#020617;--bg-card:rgba(15,23,42,0.8);--bg-card-hover:rgba(30,41,59,0.9);
             --text:#f8fafc;--text-secondary:#cbd5e1;--text-muted:#64748b;
             --border:#1e293b;--border-light:#334155;
-            --accent:#3b82f6;--accent-light:#1d4ed8;--accent-glow:rgba(59,130,246,0.15);
-            --purple:#8b5cf6;--purple-glow:rgba(139,92,246,0.15);
-            --cyan:#06b6d4;--green:#10b981;--orange:#f59e0b;--red:#ef4444;--pink:#ec4899;
+            --accent:#3b82f6;--accent-light:#1d4ed8;--accent-glow:rgba(59,130,246,0.3);
+            --purple:#8b5cf6;--purple-glow:rgba(139,92,246,0.3);
+            --cyan:#06b6d4;--cyan-glow:rgba(6,182,212,0.3);
+            --glass:rgba(255,255,255,0.05);--glass-border:rgba(255,255,255,0.1);
         }
         [data-theme="light"]{
-            --bg:#fafafa;--bg-card:#fff;--bg-card-hover:#f1f5f9;
-            --text:#0f172a;--text-secondary:#334155;--text-muted:#94a3b8;
-            --border:#e2e8f0;--border-light:#cbd5e1;
-            --accent:#3b82f6;--accent-light:#dbeafe;--accent-glow:rgba(59,130,246,0.08);
-            --purple:#8b5cf6;--purple-glow:rgba(139,92,246,0.08);
+            --bg:#e2e8f0;--bg-card:rgba(241,245,249,0.95);--bg-card-hover:rgba(226,232,240,0.98);
+            --text:#0f172a;--text-secondary:#475569;--text-muted:#64748b;
+            --border:#cbd5e1;--border-light:#94a3b8;
+            --accent:#3b82f6;--accent-light:#dbeafe;--accent-glow:rgba(59,130,246,0.15);
+            --purple:#8b5cf6;--purple-glow:rgba(139,92,246,0.15);
+            --cyan:#06b6d4;--cyan-glow:rgba(6,182,212,0.15);
+            --glass:rgba(0,0,0,0.03);--glass-border:rgba(0,0,0,0.08);
         }
-        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
-        a{color:inherit;text-decoration:none}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;min-height:100vh}
 
-        /* Nav */
-        .nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(12px);background:rgba(2,6,23,0.7);border-bottom:1px solid var(--border)}
-        [data-theme="light"] .nav{background:rgba(250,250,250,0.7)}
-        .nav-logo{font-size:18px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
-        .nav-logo span{color:var(--accent)}
-        .nav-right{display:flex;align-items:center;gap:16px}
-        .nav-link{font-size:14px;color:var(--text-muted);transition:color 0.2s;cursor:pointer}
-        .nav-link:hover{color:var(--text)}
-        .theme-btn{background:none;border:1px solid var(--border-light);border-radius:8px;padding:8px;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-        .theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+        /* Animated Background */
+        .background{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden}
+        .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);animation:float 20s infinite ease-in-out}
+        .orb1{width:600px;height:600px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 50%);top:-200px;left:-200px;animation-delay:0s}
+        .orb2{width:500px;height:500px;background:radial-gradient(circle,var(--purple-glow) 0%,transparent 50%);bottom:-150px;right:-150px;animation-delay:5s}
+        .orb3{width:400px;height:400px;background:radial-gradient(circle,var(--cyan-glow) 0%,transparent 50%);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:10s}
+        .mesh-gradient{position:absolute;width:100%;height:100%;background:radial-gradient(ellipse at 20% 30%,var(--accent-glow) 0%,transparent 40%),radial-gradient(ellipse at 80% 70%,var(--purple-glow) 0%,transparent 40%);opacity:0.3}
+        .animated-orbs{position:absolute;pointer-events:none}
+        .orb{position:absolute;border-radius:50%;filter:blur(40px);opacity:0.6}
+        .orb1{width:300px;height:300px;background:radial-gradient(circle,var(--cyan) 0%,transparent 70%);top:10%;left:15%;animation:float-orb1 20s ease-in-out infinite}
+        .orb2{width:200px;height:200px;background:radial-gradient(circle,var(--accent) 0%,transparent 60%);top:60%;right:20%;animation:float-orb2 15s ease-in-out infinite}
+        .orb3{width:250px;height:250px;background:radial-gradient(circle,var(--purple) 0%,transparent 60%);bottom:20%;left:70%;animation:float-orb3 18s ease-in-out infinite}
+        @keyframes float-orb1{0%,100%{transform:translate(0,0) scale(1);opacity:0.6}50%{transform:translate(30px,-20px) scale(1.1);opacity:0.8}}
+        @keyframes float-orb2{0%,100%{transform:translate(0,0) scale(1);opacity:0.6}50%{transform:translate(-20px,30px) scale(1.2);opacity:0.9}}
+        @keyframes float-orb3{0%,100%{transform:translate(0,0) scale(1);opacity:0.6}50%{transform:translate(20px,-15px) scale(1.15);opacity:1}}
+        .grid-overlay{position:absolute;width:100%;height:100%;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:50px 50px;opacity:0.5}
+        .noise-texture{position:absolute;width:100%;height:100%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");opacity:0.4}
+        @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-30px) scale(1.05)}66%{transform:translate(-20px,20px) scale(0.95)}}
+
+        /* Futuristic Navbar */
+        .nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);box-shadow:0 0 30px rgba(59,130,246,0.1),0 0 60px rgba(6,182,252,0.05)}
+        .nav-logo{font-size:18px;font-weight:700;display:flex;align-items:center;gap:0;text-decoration:none;position:relative;filter:drop-shadow(0 0 20px rgba(59,130,246,0.15))}
+        .nav-logo .gradient{background:linear-gradient(135deg,var(--accent),var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .nav-right{display:flex;align-items:center;gap:20px}
+        .nav-link{font-size:14px;color:var(--text-muted);transition:all 0.3s;cursor:pointer;padding:8px 16px;border-radius:12px;text-decoration:none;position:relative;filter:drop-shadow(0 0 10px rgba(59,130,246,0.1))}
+        .nav-link:hover{color:var(--text);background:var(--glass);box-shadow:0 0 20px rgba(59,130,246,0.2)}
+        .nav-link.active{color:var(--accent);background:linear-gradient(135deg,var(--accent-glow),var(--purple-glow));box-shadow:0 0 25px rgba(59,130,246,0.3)}
+        .theme-btn{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:10px;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:all 0.3s}
+        .theme-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
         .theme-btn svg{width:16px;height:16px}
 
-        /* Hero */
-        .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative}
-        .hero::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,var(--accent-glow) 0%,var(--purple-glow) 40%,transparent 70%);pointer-events:none;z-index:0}
-        .hero-content{position:relative;z-index:1}
-        .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:1px solid var(--border-light);border-radius:100px;font-size:13px;color:var(--text-muted);margin-bottom:32px;background:var(--bg-card)}
-        .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse-dot 2s infinite}
+        /* Hero Section - Open & Spacious */
+        .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:140px 24px 100px;position:relative;text-align:center}
+        .hero-content{position:relative;z-index:2;max-width:900px}
+        .hero-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;background:radial-gradient(ellipse at center,var(--accent-glow) 0%,var(--purple-glow) 25%,transparent 60%);opacity:0.3;pointer-events:none;z-index:1;animation:glow-pulse 8s ease-in-out infinite}
+        @keyframes glow-pulse{0%,100%{opacity:0.25;transform:translate(-50%,-50%) scale(1)}50%{opacity:0.35;transform:translate(-50%,-50%) scale(1.05)}}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:var(--glass);border:1px solid var(--glass-border);border-radius:100px;font-size:13px;color:var(--text-muted);margin-bottom:32px;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(59,130,246,0.1)}
+        .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite}
         @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.4}}
-        .hero h1{font-size:clamp(40px,8vw,72px);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:20px}
-        .hero h1 .gradient{background:linear-gradient(135deg,var(--accent),var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-        .hero p{font-size:18px;color:var(--text-muted);max-width:520px;margin:0 auto 40px;line-height:1.7}
-        .hero-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--text);color:var(--bg);font-size:15px;font-weight:600;border-radius:100px;border:none;cursor:pointer;transition:all 0.3s;text-decoration:none}
-        .hero-cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,255,255,0.1)}
-        .hero-cta svg{width:16px;height:16px;transition:transform 0.2s}
+        .hero h1{font-size:clamp(44px,6vw,72px);font-weight:900;letter-spacing:-0.04em;line-height:1;margin-bottom:24px;position:relative;filter:drop-shadow(0 0 40px var(--accent-glow));text-shadow:0 0 20px rgba(59,130,246,0.15)}
+        .hero h1 .gradient{background:linear-gradient(135deg,var(--cyan),var(--accent),var(--purple),var(--accent));background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradient-shift 6s ease-in-out infinite;filter:drop-shadow(0 0 40px var(--accent-glow));text-shadow:0 0 20px rgba(59,130,246,0.3)}
+        @keyframes gradient-shift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+        @keyframes float-stat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        .hero p{font-size:16px;color:var(--text-secondary);max-width:520px;margin:0 auto 40px;line-height:1.6;font-weight:400}
+        .hero-cta{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--text);font-size:15px;font-weight:600;border-radius:100px;border:1px solid var(--glass-border);cursor:pointer;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);text-decoration:none;position:relative;box-shadow:0 4px 15px rgba(59,130,246,0.1)}
+        .hero-cta:hover{transform:translateY(-2px) scale(1.02);background:var(--glass);border-color:var(--accent);color:var(--accent);box-shadow:0 8px 20px rgba(0,0,0,0.1)}
+        .hero-cta svg{width:16px;height:16px;transition:transform 0.3s}
         .hero-cta:hover svg{transform:translateX(4px)}
 
-        /* Stats */
-        .stats{display:flex;justify-content:center;gap:48px;padding:0 24px 80px;flex-wrap:wrap}
-        .stat{text-align:center}
-        .stat-num{font-size:36px;font-weight:800;letter-spacing:-0.02em}
-        .stat-label{font-size:13px;color:var(--text-muted);margin-top:4px}
+        /* Stats Section - Minimal */
+        .stats{display:flex;justify-content:center;gap:64px;padding:0 24px 100px;flex-wrap:wrap}
+        .stat-item{text-align:center;position:relative;transition:all 0.3s;animation:float-stat 4s ease-in-out infinite;transform-origin:center}
+        .stat-item:hover{transform:translateY(-5px) scale(1.05);box-shadow:0 10px 30px rgba(59,130,246,0.2)}
+        .stat-item::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100px;height:100px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);opacity:0;transition:opacity 0.3s;pointer-events:none}
+        .stat-item:hover::before{opacity:1}
+        .stat-num{font-size:clamp(32px,4vw,48px);font-weight:800;background:linear-gradient(135deg,var(--text),var(--text-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;letter-spacing:-0.02em;position:relative}
+        .stat-label{font-size:14px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;opacity:0.8}
+        .stat-pulse{width:4px;height:4px;border-radius:50%;background:var(--accent);margin:0 auto 16px;opacity:0;animation:stat-pulse 2s infinite}
+        .stat-item:hover .stat-pulse{opacity:1}
+        @keyframes stat-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:0.5}}
 
-        /* Section */
-        .section{padding:80px 24px;max-width:1100px;margin:0 auto}
-        .section-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:12px}
-        .section-title{font-size:32px;font-weight:700;letter-spacing:-0.02em;margin-bottom:48px}
-
-        /* Pipeline */
-        .pipeline{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;padding:40px 0}
-        .pipeline-node{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative}
-        .pipeline-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);background:var(--bg);position:relative;z-index:1}
-        .pipeline-dot.active{background:var(--accent);box-shadow:0 0 20px var(--accent-glow)}
-        .pipeline-info{text-align:center}
-        .pipeline-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap}
-        .pipeline-count{font-size:12px;color:var(--text-muted)}
-        .pipeline-line{width:60px;height:2px;background:var(--border-light);flex-shrink:0}
-        @media(max-width:768px){
-            .pipeline{flex-direction:column;gap:0}
-            .pipeline-line{width:2px;height:32px}
-        }
+        /* Pipeline Section - Enhanced */
+        .pipeline{max-width:1200px;margin:0 auto;padding:100px 24px}
+        .section-title{font-size:40px;font-weight:800;text-align:center;margin-bottom:16px;letter-spacing:-0.02em}
+        .section-title .gradient{background:linear-gradient(135deg,var(--cyan),var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .section-subtitle{text-align:center;font-size:16px;color:var(--text-muted);margin-bottom:60px}
+        .pipeline-flow{display:flex;justify-content:space-between;align-items:center;position:relative;padding:60px 0;gap:20px}
+        .pipeline-connector{position:absolute;top:50%;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent-glow),var(--purple-glow),var(--accent-glow));opacity:0.6;z-index:1;overflow:hidden}
+        .pipeline-connector::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:flow-pulse 3s linear infinite}
+        @keyframes flow-pulse{0%{left:-100%}100%{left:200%}}
+        @keyframes border-glow{0%,100%{opacity:0.5}50%{opacity:0.9}}
+        .pipeline-line{position:absolute;top:50%;left:5%;right:5%;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--purple),var(--cyan),transparent);opacity:0.4;z-index:1}
+        .pipeline-node{background:var(--bg-card);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:16px;padding:20px 16px;text-align:center;position:relative;z-index:2;transition:all 0.4s;cursor:pointer;min-width:160px;flex:1;box-shadow:0 0 30px rgba(59,130,246,0.1)}
+        .pipeline-node::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,var(--accent-glow),var(--purple-glow));opacity:0.3;transition:opacity 0.3s}
+        .pipeline-node:hover{transform:translateY(-6px)}
+        .pipeline-node:hover::before{opacity:1}
+        .pipeline-node.active{border-color:var(--accent);background:linear-gradient(135deg,var(--accent-glow),var(--purple-glow))}
+        .node-count{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px;position:relative;filter:drop-shadow(0 0 20px rgba(59,130,246,0.3))}
+        .node-desc{font-size:12px;color:var(--text-muted);line-height:1.4}
 
         /* Category Grid */
-        .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-        .cat-card{padding:20px;border:1px solid var(--border);border-radius:12px;background:var(--bg-card);cursor:pointer;transition:all 0.25s;display:flex;align-items:center;gap:14px}
-        .cat-card:hover{border-color:var(--border-light);background:var(--bg-card-hover);transform:translateY(-2px)}
-        .cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-        .cat-name{font-size:14px;font-weight:600;flex:1}
-        .cat-count{font-size:12px;color:var(--text-muted);background:var(--bg);padding:4px 10px;border-radius:100px}
+        .categories{max-width:1200px;margin:0 auto;padding:80px 24px}
+        .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:48px}
+        .cat-card{background:var(--bg-card);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:20px;padding:24px;transition:all 0.4s;position:relative;display:block;text-decoration:none;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.08),0 0 40px rgba(59,130,246,0.1)}
+        .cat-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:20px;padding:2px;background:linear-gradient(135deg,var(--purple-glow) 0%,var(--accent-glow) 50%,var(--cyan-glow) 100%);opacity:0.5;animation:border-glow 3s ease-in-out infinite}
+        .cat-card:hover{transform:translateY(-8px) scale(1.02) rotateX(2deg);box-shadow:0 20px 40px rgba(0,0,0,0.2),0 0 40px var(--purple-glow),0 0 80px rgba(139,92,246,0.3);border-color:var(--purple)}
+        .cat-card .cat-desc{color:var(--text-muted);font-size:14px;line-height:1.5;margin-top:8px;opacity:0.9}
+        .cat-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+        .cat-dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));box-shadow:0 0 20px currentColor}
+        .cat-name{font-size:18px;font-weight:600;color:var(--text)}
+        .cat-desc{font-size:14px;color:var(--text-secondary);line-height:1.6}
 
-        /* Footer */
-        .footer{border-top:1px solid var(--border);padding:32px;max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
-        .footer-brand{font-size:14px;font-weight:600;color:var(--text-muted)}
-        .footer-links{display:flex;gap:24px}
-        .footer-link{font-size:14px;color:var(--text-muted);transition:color 0.2s}
-        .footer-link:hover{color:var(--text)}
+
+        /* Mouse Spotlight */
+        .mouse-spotlight{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 50%);pointer-events:none;z-index:9999;opacity:0.6;filter:blur(40px);transform:translate(-50%,-50%);transition:opacity 0.3s}
+        .mouse-spotlight.hidden{opacity:0}
+
 
         /* Responsive */
         @media(max-width:768px){
-            .nav{padding:12px 16px}
-            .hero{padding:100px 16px 60px}
-            .hero p{font-size:16px}
-            .stats{gap:24px}
-            .stat-num{font-size:28px}
-            .section{padding:48px 16px}
-            .section-title{font-size:24px}
+            .nav{padding:16px 20px}
+            .hero{padding:120px 20px 80px}
+            .hero h1{font-size:clamp(40px,10vw,64px)}
+            .hero-glow{width:100%;height:300px}
+            .stats{gap:40px;padding:0 20px 60px}
+            .stat-num{font-size:36px}
+            .pipeline-flow{flex-direction:column;gap:16px;padding:40px 0}
+            .pipeline-line,.pipeline-flow::after{display:none}
+            .pipeline-node{min-width:auto;width:100%;max-width:280px}
             .cat-grid{grid-template-columns:1fr}
-            .footer{flex-direction:column;text-align:center}
+            .section-title{font-size:32px}
         }
     </style>
 </head>
 <body>
-    <!-- Nav -->
+    <!-- Animated Background -->
+    <div class="background">
+        <div class="gradient-orb orb1"></div>
+        <div class="gradient-orb orb2"></div>
+        <div class="gradient-orb orb3"></div>
+        <div class="mesh-gradient"></div>
+        <div class="grid-overlay"></div>
+        <div class="noise-texture"></div>
+    </div>
+
+    <!-- Futuristic Navbar -->
     <nav class="nav">
-        <a href="index.html" class="nav-logo"><span>RAG</span> Techniques</a>
+        <a href="index.html" class="nav-logo"><span class="gradient">RAG Techniques</span></a>
         <div class="nav-right">
             <a href="techniques.html" class="nav-link">Techniques</a>
             <a href="about.html" class="nav-link">About</a>
@@ -122,133 +167,360 @@
         </div>
     </nav>
 
-    <!-- Hero -->
+    <!-- Hero Section - Open & Spacious -->
     <section class="hero">
+        <div class="hero-glow"></div>
         <div class="hero-content">
-            <h1><span class="gradient">Advanced RAG Techniques</span></h1>
+            <h1><span class="gradient">Advanced RAG<br>Techniques</span></h1>
             <p>Methods and patterns for retrieval-augmented generation systems.</p>
             <a href="techniques.html" class="hero-cta">
                 Explore Techniques
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12,5 19,12 12,19"></polyline>
+                </svg>
+            </a>
+        </div>
+        <!-- Floating Particles -->
+        <div class="particles" id="particles"></div>
+    </section>
+
+    <!-- Statistics Section - Minimal -->
+    <section class="stats">
+        <div class="stat-item">
+            <div class="stat-pulse"></div>
+            <div class="stat-num" data-target="190">0</div>
+            <div class="stat-label">Techniques</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-pulse"></div>
+            <div class="stat-num" data-target="14">0</div>
+            <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-pulse"></div>
+            <div class="stat-num" data-target="5">0</div>
+            <div class="stat-label">Pipeline Stages</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-pulse"></div>
+            <div class="stat-num" data-target="3">0</div>
+            <div class="stat-label">Relation Types</div>
+        </div>
+    </section>
+
+    <!-- Pipeline Section -->
+    <section class="pipeline">
+        <h2 class="section-title"><span class="gradient">Five Stages of RAG</span></h2>
+        <p class="section-subtitle">The complete retrieval-augmented generation pipeline</p>
+        <div class="pipeline-flow">
+            <div class="pipeline-line"></div>
+            <div class="pipeline-node">
+                <div class="node-count">56</div>
+                <div class="node-title">Pre-Retrieval</div>
+                <div class="node-desc">Query transformation</div>
+            </div>
+            <div class="pipeline-node">
+                <div class="node-count">71</div>
+                <div class="node-title">Retrieval Core</div>
+                <div class="node-desc">Search & retrieval</div>
+            </div>
+            <div class="pipeline-node">
+                <div class="node-count">30</div>
+                <div class="node-title">Post-Retrieval</div>
+                <div class="node-desc">Result processing</div>
+            </div>
+            <div class="pipeline-node">
+                <div class="node-count">22</div>
+                <div class="node-title">Generation</div>
+                <div class="node-desc">Response synthesis</div>
+            </div>
+            <div class="pipeline-node">
+                <div class="node-count">15</div>
+                <div class="node-title">Cross-Session</div>
+                <div class="node-desc">Memory & persistence</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+        <h2 class="section-title"><span class="gradient">Explore Categories</span></h2>
+        <p class="section-subtitle">14 specialized domains of RAG research</p>
+        <div class="cat-grid">
+            <a href="techniques.html?category=1" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#2563EB,#1d4ed8)"></div>
+                    <h3 class="cat-name">Query Transformation</h3>
+                </div>
+                <p class="cat-desc">Query reformulation, expansion, rewriting, and augmentation techniques.</p>
+            </a>
+            <a href="techniques.html?category=2" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#0891B2,#0e7490)"></div>
+                    <h3 class="cat-name">Routing & Classification</h3>
+                </div>
+                <p class="cat-desc">Query routing, logical/semantic classification, conditional pipeline selection.</p>
+            </a>
+            <a href="techniques.html?category=3" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#7C3AED,#6d28d9)"></div>
+                    <h3 class="cat-name">Agentic & Multi-Agent</h3>
+                </div>
+                <p class="cat-desc">Autonomous agents, multi-agent collaboration, iterative workflows.</p>
+            </a>
+            <a href="techniques.html?category=4" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#059669,#047857)"></div>
+                    <h3 class="cat-name">Hybrid & Ensemble</h3>
+                </div>
+                <p class="cat-desc">Combining dense and sparse retrieval, ensemble methods, fusion strategies.</p>
+            </a>
+            <a href="techniques.html?category=5" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#DC2626,#b91c1c)"></div>
+                    <h3 class="cat-name">Chunking & Segmentation</h3>
+                </div>
+                <p class="cat-desc">Semantic chunking, adaptive chunking, proposition chunking strategies.</p>
+            </a>
+            <a href="techniques.html?category=6" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#EA580C,#c2410c)"></div>
+                    <h3 class="cat-name">Hierarchical Indexing</h3>
+                </div>
+                <p class="cat-desc">Tree structures, RAPTOR, hierarchical indices, multi-level navigation.</p>
+            </a>
+            <a href="techniques.html?category=7" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#BE185D,#9d174d)"></div>
+                    <h3 class="cat-name">Multi-Vector Embeddings</h3>
+                </div>
+                <p class="cat-desc">Multi-vector representations, late interaction models, attention mechanisms.</p>
+            </a>
+            <a href="techniques.html?category=8" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#F59E0B,#d97706)"></div>
+                    <h3 class="cat-name">Multimodal Retrieval</h3>
+                </div>
+                <p class="cat-desc">Visual document retrieval, image-based search, multimodal RAG.</p>
+            </a>
+            <a href="techniques.html?category=9" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#0369A1,#075985)"></div>
+                    <h3 class="cat-name">Reranking & Filtering</h3>
+                </div>
+                <p class="cat-desc">Cross-encoder reranking, LLM-based scoring, adaptive K selection.</p>
+            </a>
+            <a href="techniques.html?category=10" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#4338CA,#3730a3)"></div>
+                    <h3 class="cat-name">Context Compression</h3>
+                </div>
+                <p class="cat-desc">Prompt compression, context window optimization, information density.</p>
+            </a>
+            <a href="techniques.html?category=11" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#0F766E,#115e59)"></div>
+                    <h3 class="cat-name">Verification & Correction</h3>
+                </div>
+                <p class="cat-desc">Self-RAG, CRAG, verification loops, reflection-based quality control.</p>
+            </a>
+            <a href="techniques.html?category=12" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#A16207,#854d0e)"></div>
+                    <h3 class="cat-name">Knowledge Graph</h3>
+                </div>
+                <p class="cat-desc">GraphRAG, knowledge graph integration, neurosymbolic retrieval.</p>
+            </a>
+            <a href="techniques.html?category=13" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#BE123C,#9f1239)"></div>
+                    <h3 class="cat-name">Training & Alignment</h3>
+                </div>
+                <p class="cat-desc">Fine-tuning embeddings, retriever-generator alignment, contrastive learning.</p>
+            </a>
+            <a href="techniques.html?category=14" class="cat-card">
+                <div class="cat-header">
+                    <div class="cat-dot" style="background:linear-gradient(135deg,#52525B,#3f3f46)"></div>
+                    <h3 class="cat-name">Memory & Cross-Session</h3>
+                </div>
+                <p class="cat-desc">Persistent memory, caching, conversational continuity, state management.</p>
             </a>
         </div>
     </section>
 
-    <!-- Stats -->
-    <div class="stats">
-        <div class="stat"><div class="stat-num">194</div><div class="stat-label">Techniques</div></div>
-        <div class="stat"><div class="stat-num">14</div><div class="stat-label">Categories</div></div>
-        <div class="stat"><div class="stat-num">5</div><div class="stat-label">Pipeline Stages</div></div>
-        <div class="stat"><div class="stat-num">3</div><div class="stat-label">Relation Types</div></div>
-    </div>
+    <!-- Mouse Spotlight -->
+    <div class="mouse-spotlight" id="mouseSpotlight"></div>
 
-    <!-- Pipeline Stages -->
-    <section class="section">
-        <div class="section-label">Pipeline</div>
-        <div class="section-title">Five stages of RAG</div>
-        <div class="pipeline">
-            <div class="pipeline-node">
-                <div class="pipeline-dot active"></div>
-                <div class="pipeline-info"><div class="pipeline-name">Pre-Retrieval</div><div class="pipeline-count">38 techniques</div></div>
-            </div>
-            <div class="pipeline-line"></div>
-            <div class="pipeline-node">
-                <div class="pipeline-dot active"></div>
-                <div class="pipeline-info"><div class="pipeline-name">Retrieval Core</div><div class="pipeline-count">67 techniques</div></div>
-            </div>
-            <div class="pipeline-line"></div>
-            <div class="pipeline-node">
-                <div class="pipeline-dot active"></div>
-                <div class="pipeline-info"><div class="pipeline-name">Post-Retrieval</div><div class="pipeline-count">52 techniques</div></div>
-            </div>
-            <div class="pipeline-line"></div>
-            <div class="pipeline-node">
-                <div class="pipeline-dot active"></div>
-                <div class="pipeline-info"><div class="pipeline-name">Generation</div><div class="pipeline-count">28 techniques</div></div>
-            </div>
-            <div class="pipeline-line"></div>
-            <div class="pipeline-node">
-                <div class="pipeline-dot active"></div>
-                <div class="pipeline-info"><div class="pipeline-name">Cross-Session</div><div class="pipeline-count">9 techniques</div></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Categories -->
-    <section class="section">
-        <div class="section-label">Categories</div>
-        <div class="section-title">Browse by category</div>
-        <div class="cat-grid" id="catGrid"></div>
-    </section>
- 
-
-    <script type="module">
-        import { getDataInLegacyFormat } from './supabase-client.js?v=3';
-
-        async function loadDynamicData() {
-            try {
-                const data = await getDataInLegacyFormat();
-                const CLUSTERS = data.CLUSTERS;
-                const DATA = data.DATA;
-
-                // Update stats
-                document.querySelector('.stat-num').textContent = DATA.length;
-                document.querySelectorAll('.stat-num')[1].textContent = CLUSTERS.length;
-
-                // Count techniques per stage
-                const stageCounts = {};
-                DATA.forEach(d => { stageCounts[d.s] = (stageCounts[d.s] || 0) + 1; });
-
-                // Update pipeline counts
-                document.querySelectorAll('.pipeline-count').forEach(el => {
-                    const name = el.previousElementSibling.textContent.trim();
-                    if (stageCounts[name]) el.textContent = stageCounts[name] + ' techniques';
-                });
-
-                // Count techniques per cluster
-                const clusterCounts = {};
-                DATA.forEach(d => { clusterCounts[d.c] = (clusterCounts[d.c] || 0) + 1; });
-
-                // Render category grid
-                const grid = document.getElementById('catGrid');
-                grid.innerHTML = '';
-                CLUSTERS.forEach(cl => {
-                    const count = clusterCounts[cl.id] || 0;
-                    const card = document.createElement('a');
-                    card.href = `techniques.html?category=${cl.id}`;
-                    card.className = 'cat-card';
-                    card.innerHTML = `<span class="cat-dot" style="background:${cl.color}"></span><span class="cat-name">${cl.name}</span><span class="cat-count">${count}</span>`;
-                    grid.appendChild(card);
-                });
-            } catch (err) {
-                console.error('Failed to load dynamic data:', err);
-            }
-        }
-        loadDynamicData();
-
-        // Theme
+    <script>
+        // Theme Toggle
         function toggleTheme() {
             const html = document.documentElement;
-            const current = html.getAttribute('data-theme');
-            const next = current === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', next);
-            localStorage.setItem('theme', next);
-            updateThemeIcon(next);
-        }
-
-        function updateThemeIcon(theme) {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update icon
             const icon = document.getElementById('themeIcon');
-            if (theme === 'dark') {
-                icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+            if (newTheme === 'light') {
+                icon.innerHTML = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
             } else {
-                icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+                icon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
             }
         }
 
-        // Init theme
+        // Load saved theme
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
+        if (savedTheme === 'light') {
+            document.getElementById('themeIcon').innerHTML = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+        }
+
+        // Animated Counter
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'));
+            const duration = 2000;
+            const step = target / (duration / 16);
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(current);
+            }, 16);
+        }
+
+        // Floating Particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 3 + 1;
+            const colors = ['rgba(59,130,246,0.6)', 'rgba(6,182,252,0.4)', 'rgba(139,92,246,0.3)'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                background: radial-gradient(circle, ${color} 50%, transparent 70%);
+                border-radius: 50%;
+                filter: blur(1px);
+                opacity: ${Math.random() * 0.5 + 0.3};
+                left: ${Math.random() * 100}%;
+                top: ${Math.random() * 100}%;
+                pointer-events: none;
+                animation: float-particle ${Math.random() * 5 + 3}s ease-in-out infinite;
+            `;
+            return particle;
+        }
+
+        function initParticles() {
+            const container = document.getElementById('particles');
+            if (!container) return;
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    container.appendChild(createParticle());
+                    
+                    // Remove particle after animation
+                    setTimeout(() => {
+                        const particles = container.querySelectorAll('.particle');
+                        if (particles.length > 50) {
+                            particles[0].remove();
+                        }
+                    }, 3000 + Math.random() * 2000);
+                }, i * 100);
+            }
+        }
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    if (entry.target.classList.contains('stat-num')) {
+                        animateCounter(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                    if (entry.target.classList.contains('hero-content')) {
+                        initParticles();
+                        observer.unobserve(entry.target);
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements
+        document.querySelectorAll('.stat-num, .hero-content').forEach(el => observer.observe(el));
+
+        // Mouse spotlight effect
+        const spotlight = document.getElementById('mouseSpotlight');
+        let mouseX = 0, mouseY = 0;
+        let spotlightTimeout;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            clearTimeout(spotlightTimeout);
+            spotlightTimeout = setTimeout(() => {
+                spotlight.style.left = mouseX + 'px';
+                spotlight.style.top = mouseY + 'px';
+                spotlight.classList.remove('hidden');
+            }, 50);
+        });
+        
+        document.addEventListener('mouseleave', () => {
+            spotlight.classList.add('hidden');
+        });
+
+        // Scroll reveal animations
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '0';
+                    entry.target.style.transform = 'translateY(50px)';
+                    
+                    setTimeout(() => {
+                        entry.target.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }, 100);
+                    
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.stat-item, .pipeline-node, .cat-card').forEach(el => {
+            revealObserver.observe(el);
+        });
+
+        // Pipeline node interactions
+        document.querySelectorAll('.pipeline-node').forEach((node, index) => {
+            node.addEventListener('click', () => {
+                document.querySelectorAll('.pipeline-node').forEach(n => n.classList.remove('active'));
+                node.classList.add('active');
+            });
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
     </script>
 </body>
 </html>

@@ -80,6 +80,7 @@ export async function getTechniques() {
             id, name, cluster_id, stage_id, problem_id, mechanism_id, description,
             performance_boost, integration_simplicity, latency, cost, popularity,
             popularity_breakdown,
+            estimated_origin, publication_date, publication_source,
             recommended_for, key_limitation, implementation_notes,
             clusters!inner(*),
             stages!inner(*),
@@ -143,7 +144,7 @@ export async function getDataInLegacyFormat() {
     const DATA = techniques.map(t => ({
         t: t.name,
         c: t.cluster_id,
-        p: t.problems.name,
+        p: t.problems?.name,
         s: t.stages.name,
         m: t.mechanisms.name,
         sim: t.technique_relationships.map(r => r.related_technique?.name).filter(Boolean),
@@ -153,6 +154,9 @@ export async function getDataInLegacyFormat() {
         cost: t.cost,
         popularity: t.popularity,
         popularity_breakdown: t.popularity_breakdown,
+        estimated_origin: t.estimated_origin,
+        publication_date: t.publication_date,
+        publication_source: t.publication_source,
         recommended_for: t.recommended_for,
         key_limitation: t.key_limitation,
         implementation_notes: t.implementation_notes
