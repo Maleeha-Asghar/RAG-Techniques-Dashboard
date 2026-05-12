@@ -426,7 +426,7 @@
                 <button class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
-                <input type="search" id="searchBox" placeholder="Search techniques...">
+                <input type="search" id="searchBox" placeholder="Search techniques..." autocomplete="off">
                 <span class="stats" id="statsLabel">Techniques</span>
             </div>
             <div class="toolbar-row">
@@ -714,7 +714,7 @@
         }
     </script>
     <script type="module">
-        import { getDataInLegacyFormat, FALLBACK_CLUSTERS } from './supabase-client.js?v=3';
+        import { getDataInLegacyFormat, FALLBACK_CLUSTERS } from './supabase-client.js';
         
         // Helper function to render references as links
         function renderReferences(refs) {
@@ -1342,7 +1342,7 @@
                             </button>
                             <div class="overall-score-popover" id="overallScorePopover">
                                 <div class="overall-score-popover-title">Overall Score Calculation</div>
-        
+
                                 <ul class="overall-score-popover-list">
                                     <li>Performance Boost: 40%</li>
                                     <li>Integration Simplicity: 20%</li>
@@ -2438,11 +2438,11 @@
                 <div data-fs-error class="form-message" style="margin-bottom:12px;display:none"></div>
                 <div class="form-group">
                     <label class="form-label">Technique Name *</label>
-                    <input type="text" class="form-input" name="techniqueName" data-fs-field required placeholder="e.g., Adaptive RAG">
+                    <input type="text" class="form-input" name="techniqueName" data-fs-field required placeholder="e.g., Adaptive RAG" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Primary Category</label>
-                    <select class="form-select" name="category">
+                    <select class="form-select" name="category" autocomplete="off">
                         <option value="">Select category...</option>
                         <option value="QT">Query Transformation & Expansion</option>
                         <option value="RC">Routing & Query Classification</option>
@@ -2462,7 +2462,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Pipeline Stage</label>
-                    <select class="form-select" name="stage">
+                    <select class="form-select" name="stage" autocomplete="off">
                         <option value="">Select stage...</option>
                         <option value="pre-retrieval">Pre-Retrieval</option>
                         <option value="retrieval core">Retrieval Core</option>
@@ -2473,19 +2473,19 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Problem Addressed</label>
-                    <input type="text" class="form-input" name="problem" placeholder="e.g., retrieval quality, context loss">
+                    <input type="text" class="form-input" name="problem" placeholder="e.g., retrieval quality, context loss" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Core Mechanism</label>
-                    <input type="text" class="form-input" name="mechanism" placeholder="e.g., query expansion, adaptive chunking">
+                    <input type="text" class="form-input" name="mechanism" placeholder="e.g., query expansion, adaptive chunking" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Description</label>
-                    <textarea class="form-textarea" name="description" placeholder="Describe the technique, how it works, and when it's used..."></textarea>
+                    <textarea class="form-textarea" name="description" placeholder="Describe the technique, how it works, and when it's used..." autocomplete="off"></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Your Email (optional)</label>
-                    <input type="email" class="form-input" name="email" placeholder="For follow-up questions">
+                    <input type="email" class="form-input" name="email" placeholder="For follow-up questions" autocomplete="email">
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="closeSuggestModal()">Cancel</button>
@@ -2512,7 +2512,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Issue Type *</label>
-                    <select class="form-select" name="issueType" required>
+                    <select class="form-select" name="issueType" required autocomplete="off">
                         <option value="">Select issue type...</option>
                         <option value="description-error">Description Error</option>
                         <option value="wrong-category">Wrong Category</option>
@@ -2524,11 +2524,11 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Details / Correction *</label>
-                    <textarea class="form-textarea" name="details" required placeholder="Describe what's incorrect and provide the correct information..."></textarea>
+                    <textarea class="form-textarea" name="details" required placeholder="Describe what's incorrect and provide the correct information..." autocomplete="off"></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Your Email (optional)</label>
-                    <input type="email" class="form-input" name="email" placeholder="For follow-up if needed">
+                    <input type="email" class="form-input" name="email" placeholder="For follow-up if needed" autocomplete="email">
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="closeReportModal()">Cancel</button>
