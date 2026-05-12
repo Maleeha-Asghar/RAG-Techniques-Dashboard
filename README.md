@@ -6,6 +6,5 @@ A comprehensive web application for exploring, researching, and cataloging Retri
 
 This project provides an interactive platform for:
 
-- **Discovering RAG Techniques**: Browse a curated collection of RAG methods, patterns, and architectural approaches
-- **Comparative Analysis**: Evaluate techniques using structured scorecards with popularity metrics
-- **Research Documentation**: Access detailed information about each technique's implementation and use cases.
+- **Discovering RAG Techniques**: Browse a curated collection of RAG methods, patterns, and architectural approaches.
+- **Comparative Analysis**: Evaluate techniques using structured scorecards with popularity metrics.
