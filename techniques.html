@@ -755,8 +755,7 @@
                 console.log(`Loaded ${DATA.length} techniques from Supabase`);
                 const scoreDebug = {};
                 DATA.forEach(d => { if (d.performance_boost) scoreDebug[d.performance_boost] = (scoreDebug[d.performance_boost] || 0) + 1; });
-                console.log('Performance Boost distribution in DATA:', scoreDebug);
-                
+               
                 // Expand all clusters by default
                 expandedClusters = new Set(CLUSTERS.map(c => c.id));
                 
@@ -2505,7 +2504,7 @@
             <form id="reportForm">
                 <div data-fs-success class="form-message" style="margin-bottom:12px;display:none"></div>
                 <div data-fs-error class="form-message" style="margin-bottom:12px;display:none"></div>
-                <input type="hidden" name="techniqueName" id="reportTechName" data-fs-field>
+                <input type="hidden" name="techniqueName" id="reportTechName" data-fs-field aria-label="Technique Name">
                 <div class="form-group">
                     <label class="form-label">Technique</label>
                     <input type="text" class="form-input" name="techniqueDisplay" id="reportTechDisplay" data-fs-field readonly>
