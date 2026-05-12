@@ -78,7 +78,7 @@ export async function getTechniques() {
         .from('techniques')
         .select(`
             id, name, cluster_id, stage_id, problem_id, mechanism_id, description,
-            performance_boost, integration_simplicity, latency, cost, popularity,
+            performance_boost, integration_simplicity, latency, cost, popularity, overall_score,
             popularity_breakdown,
             estimated_origin, publication_date, publication_source,
             recommended_for, key_limitation, implementation_notes,
@@ -153,6 +153,7 @@ export async function getDataInLegacyFormat() {
         latency: t.latency,
         cost: t.cost,
         popularity: t.popularity,
+        overall_score: t.overall_score,
         popularity_breakdown: t.popularity_breakdown,
         estimated_origin: t.estimated_origin,
         publication_date: t.publication_date,
