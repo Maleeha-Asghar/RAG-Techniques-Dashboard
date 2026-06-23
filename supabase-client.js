@@ -18,6 +18,33 @@ let clustersCache = null;
 let techniquesCache = null;
 let gradesCache = null;
 
+const FALLBACK_TECHNIQUE_IMAGES = {
+    'PixelRAG': 'illustrations/PixelRAG.png',
+    'Direct Corpus Interaction (DCI)': 'illustrations/Direct Corpus Interaction (DCI).png',
+    'TurboVec': 'illustrations/TurboVec.png',
+    'VectorLiteRAG': 'illustrations/VectorLiteRAG.png',
+    'QuOTE (Question-Oriented Text Embeddings)': 'illustrations/QuOTE (Question-Oriented Text Embeddings).png',
+    'Logits-Guided Multi-Granular Chunker (LGMGC)': 'illustrations/Logits-Guided Multi-Granular Chunker (LGMGC).png',
+    'GrepRAG': 'illustrations/GrepRAG.png',
+    'REAP (Recursive Evaluation and Adaptive Planning)': 'illustrations/REAP.png',
+    'DMQR-RAG (Diverse Multi-Query Rewriting for RAG)': 'illustrations/DMQR-RAG (Diverse Multi-Query Rewriting for RAG).png',
+    'CoRank': 'illustrations/CoRank.png',
+    'RAG-MCP': 'illustrations/RAG-MCP.png',
+    'Stop-RAG': 'illustrations/Stop-RAG.png',
+    'KG-IRAG (Knowledge Graph Iterative Retrieval-Augmented Generation)': 'illustrations/KG-IRAG (Knowledge Graph Iterative Retrieval-Augmented Generation).png',
+    'HIRAG (Hierarchical-Thought Instruction-Tuning RAG)': 'illustrations/HIRAG (Hierarchical-Thought Instruction-Tuning RAG).png',
+    'LeanRAG': 'illustrations/LeanRAG.png',
+    'HiSem-RAG (Hierarchical Semantic-Driven RAG)': 'illustrations/HiSem-RAG (Hierarchical Semantic-Driven RAG).png',
+    'ArchRAG (Attributed Community-based Hierarchical Retrieval)': 'illustrations/ArchRAG (Attributed Community-based Hierarchical Retrieval).png',
+    'Ψ-RAG (Psi-RAG)': 'illustrations/Ψ-RAG (Psi-RAG).png',
+    'BookRAG': 'illustrations/BookRAG.png',
+    'Agentic RAG with Human-in-the-Retrieval': 'illustrations/Agentic RAG with Human-in-the-Retrieval.png',
+    'HopRAG': 'illustrations/HopRAG.png',
+    'Plan*RAG': 'illustrations/PlanRAG.png',
+    'xRAG': 'illustrations/xRAG.png',
+    'TURA (Tool-Augmented Unified Retrieval Agent for AI Search)': 'illustrations/TURA (Tool-Augmented Unified Retrieval Agent for AI Search).png'
+};
+
 // ============================================
 // API FUNCTIONS
 // ============================================
@@ -180,7 +207,7 @@ export async function getDataInLegacyFormat() {
     });
     
     // Build TECHNIQUE_IMAGES object
-    const TECHNIQUE_IMAGES = {};
+    const TECHNIQUE_IMAGES = { ...FALLBACK_TECHNIQUE_IMAGES };
     techniques.forEach(t => {
         if (t.technique_illustrations?.length > 0) {
             TECHNIQUE_IMAGES[t.name] = t.technique_illustrations[0].image_path;
